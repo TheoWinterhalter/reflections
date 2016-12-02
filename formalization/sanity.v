@@ -199,167 +199,57 @@ Proof.
     (split ; [(split ; [split | idtac]) | idtac]) ; oldmagic.
 
     (* EqTyConv *)
-    + eapply TermTyConv.
-      * ih.
-      * assumption.
-    + eapply TermTyConv.
-      * ih.
-      * assumption.
+    + emagic.
+    + emagic.
 
     (* EqCtxConv *)
-    + eapply TyCtxConv.
-      * ih.
-      * assumption.
-    + eapply TermCtxConv.
-      * ih.
-      * assumption.
-    + eapply TermCtxConv.
-      * ih.
-      * assumption.
+    + emagic.
+    + emagic.
+    + emagic.
 
     (* Eqsubstweak *)
-    + apply @TySubst with (D := G).
-      * now apply SubstWeak.
-      * ih.
-    + apply @TermSubst with (D := G).
-      * now apply SubstWeak.
-      * assumption.
+    + emagic.
+    + emagic.
 
     (* EqSubstZeroZero *)
-    + eapply TermTyConv.
-      * { eapply TermSubst.
-          - now apply SubstZero.
-          - apply TermVarZero.
-            ih. }
-      * { apply EqTyWeakZero.
-          - ih.
-          - assumption. }
+    + emagic.
 
     (* EqSubstZeroSucc *)
-    + eapply TermTyConv.
-      * { eapply TermSubst.
-          - now apply SubstZero.
-          - apply @TermVarSucc with (A := A).
-            + assumption.
-            + ih. }
-      * { apply EqTyWeakZero.
-          - ih.
-          - assumption. }
+    + emagicn (S (S (S (S 0)))).
 
     (* EqSubstShiftZero *)
-    + now apply @TySubst with (D := D).
-    + { eapply TySubst.
-        - apply SubstWeak.
-          now apply @TySubst with (D := D).
-        - now apply @TySubst with (D := D). }
-    + { eapply TermTyConv.
-        - eapply TermSubst.
-          + eapply SubstShift.
-            * eassumption.
-            * assumption.
-          + now apply TermVarZero.
-        - now apply EqTyWeakNat. }
-    + now apply @TySubst with (D := D).
+    + emagic.
+    + emagicn (S (S (S (S 0)))).
+    + emagicn (S (S (S (S 0)))).
+    + emagic.
 
     (* EqSubstShiftSucc *)
-    + now apply @TySubst with (D := D).
-    + { eapply TySubst.
-        - apply SubstWeak.
-          now apply @TySubst with (D := D).
-        - apply @TySubst with (D := D).
-          + assumption.
-          + ih. }
-    + { eapply TermTyConv.
-        - eapply TermSubst.
-          + eapply SubstShift.
-            * eassumption.
-            * assumption.
-          + eapply TermVarSucc.
-            * eassumption.
-            * assumption.
-        - apply EqTyWeakNat.
-          + assumption.
-          + assumption.
-          + ih. }
-    + { eapply TermSubst.
-        - apply SubstWeak.
-          now apply @TySubst with (D := D).
-        - now apply @TermSubst with (D := D). }
+    + emagic.
+    + emagicn (S (S (S (S 0)))).
+    + emagicn (S (S (S (S 0)))).
+    + emagicn (S (S (S (S 0)))).
 
     (* EqSubstWeakZero *)
-    + { eapply TermTyConv.
-        - eapply TermSubst.
-          + magic.
-          + eapply TermSubst.
-            * magic.
-            * eassumption.
-        - apply EqTyWeakZero.
-          + magic.
-          + magic.
-      }
+    + emagicn (S (S (S (S 0)))).
 
     (* EqSubstAbs *)
-    + now apply @TySubst with (D := D).
-    + eapply TySubst.
-      * now apply @SubstShift with (D := D).
-      * ih.
-    + { eapply TermTyConv.
-        - apply @TermSubst with (D := D).
-          + assumption.
-          + now apply TermAbs.
-        - apply @EqTySubstProd with (D := D).
-          + assumption.
-          + assumption.
-          + ih. }
-    + now apply @TySubst with (D := D).
-    + { eapply TermSubst.
-        - eapply SubstShift.
-          + eassumption.
-          + assumption.
-        - assumption.
-      }
+    + emagic.
+    + emagic.
+    + emagic.
+    + emagic.
+    + emagic.
 
     (* EqSubstApp *)
-    + { eapply TySubst.
-        - eassumption.
-        - eapply TySubst.
-          + now apply SubstZero.
-          + assumption. }
-    + { apply @TermSubst with (D := D).
-        - assumption.
-        - now apply TermApp. }
-    + { eapply TermTyConv.
-        - apply TermApp.
-          + { eapply TySubst.
-              - eapply SubstShift.
-                + eassumption.
-                + ih.
-              - assumption. }
-          + { eapply TermTyConv.
-              - apply @TermSubst with (D := D).
-                + assumption.
-                + eassumption.
-              - eapply EqTySubstProd.
-                + eassumption.
-                + ih.
-                + assumption. }
-          + now apply @TermSubst with (D := D).
-        - now apply EqTyShiftZero. }
+    + emagic.
+    + emagic.
+    + emagicn (S (S (S (S (S 0))))).
 
     (* EqSubstRefl *)
-    + apply @TySubst with (D := D) ; magic.
-    + now apply @TermSubst with (D := D).
-    + now apply @TermSubst with (D := D).
-    + { eapply TermTyConv.
-        - apply @TermSubst with (D := D).
-          + assumption.
-          + now apply TermRefl.
-        - apply @EqTySubstId with (D := D).
-          + assumption.
-          + ih.
-          + assumption.
-          + assumption. }
-    + now apply @TermSubst with (D := D).
+    + emagic.
+    + emagic.
+    + emagic.
+    + emagic.
+    + emagic.
 
     (* EqSubstJ *)
     + { eapply TySubst.
@@ -408,16 +298,7 @@ Proof.
                   }
             }
       }
-    + { eapply TermSubst.
-        - eassumption.
-        - constructor.
-          + magic.
-          + assumption.
-          + assumption.
-          + assumption.
-          + assumption.
-          + assumption.
-      }
+    + emagic.
     + { eapply TermTyConv.
         - constructor.
           + apply @TySubst with (D := D) ; assumption.
@@ -467,54 +348,23 @@ Proof.
       }
 
     (* EqSubstExfalso *)
-    + eapply TySubst.
-      * eassumption.
-      * assumption.
-    + eapply TermSubst.
-      * eassumption.
-      * apply TermExfalso ; assumption.
-    + now apply @TySubst with (D := D).
-    + { eapply TermTyConv.
-        - apply @TermSubst with (D := D).
-          + assumption.
-          + eassumption.
-        - now apply @EqTySubstEmpty with (D := D).
-      }
+    + emagic.
+    + emagic.
+    + emagic.
+    + emagic.
 
     (* EqSubstUnit *)
-    + eapply TermTyConv.
-      * { apply @TermSubst with (D := D).
-          - assumption.
-          - apply TermUnit. ih.
-        }
-      * now apply @EqTySubstUnit with (D := D).
+    + emagic.
 
     (* EqSubstTrue *)
-    + eapply TermTyConv.
-      * { apply @TermSubst with (D := D).
-          - assumption.
-          - apply TermTrue. ih.
-        }
-      * now apply @EqTySubstBool with (D := D).
+    + emagic.
 
     (* EqSubstFalse *)
-    + eapply TermTyConv.
-      * { apply @TermSubst with (D := D).
-          - assumption.
-          - apply TermFalse. ih.
-        }
-      * now apply @EqTySubstBool with (D := D).
+    + emagic.
 
     (* EqSubstCond *)
-    + { eapply TySubst.
-        - eassumption.
-        - apply @TySubst with (D := ctxextend D Bool).
-          + now apply SubstZero.
-          + assumption.
-      }
-    + eapply TermSubst.
-      * eassumption.
-      * now apply TermCond.
+    + emagic.
+    + emagic.
     + { eapply TermTyConv.
         - apply TermCond.
           + { eapply TermTyConv.
@@ -593,67 +443,28 @@ Proof.
 
 
     (* ProdBeta *)
-    + { eapply TySubst.
-        - now apply SubstZero.
-        - ih. }
-    + { apply TermAbs.
-        - ih.
-        - assumption. }
-    + { eapply TermSubst.
-        - now apply SubstZero.
-        - assumption. }
+    + emagic.
+    + emagic.
+    + emagic.
 
     (* CongTrue *)
-    + constructor. ih.
+    + magic.
 
     (* CongFalse *)
-    + constructor. ih.
+    + magic.
 
     (* JRefl*)
-    + destruct todo.
+    + emagic.
 
     (* CongAbs *)
-    + { eapply TermTyConv.
-        - apply TermAbs.
-          + ih.
-          + { eapply TermCtxConv.
-              - eapply TermTyConv.
-                + ih.
-                + assumption.
-              - now apply EqCtxExtend. }
-        - apply CongProd.
-          + now apply EqTySym.
-          + { eapply EqTyCtxConv.
-              - now apply @EqTySym with (G := ctxextend G A1).
-              - now apply EqCtxExtend. } }
+    + emagicn (S (S (S (S 0)))).
 
     (* CongApp *)
-    + { eapply TySubst.
-        - apply SubstZero.
-          ih.
-        - ih. }
-    + { eapply TermTyConv.
-        - apply TermApp.
-          + { eapply TyCtxConv.
-              - ih.
-              - now apply EqCtxExtend. }
-          + { eapply TermTyConv.
-              - ih.
-              - now apply CongProd. }
-          + { eapply TermTyConv.
-              - ih.
-              - assumption. }
-        - apply EqTySym.
-          now apply EqTyCongZero. }
+    + emagic.
+    + emagicn (S (S (S (S 0)))).
 
     (* ConfRefl *)
-    + { eapply TermTyConv.
-        - apply TermRefl.
-          { eapply TermTyConv.
-            - ih.
-            - assumption. }
-        - apply EqTySym.
-          now apply CongId. }
+    + emagic.
 
     (* CongJ *)
     + destruct todo.
@@ -661,9 +472,7 @@ Proof.
     + destruct todo.
 
     (* CongCond *)
-    + eapply TySubst.
-      * apply SubstZero. ih.
-      * ih.
+    + emagic.
     + { eapply TermTyConv.
         - { apply TermCond.
             - ih.
@@ -692,14 +501,8 @@ Proof.
       }
 
     (* CongTermSubst *)
-    + apply @TySubst with (D := D).
-      * assumption.
-      * ih.
-    + apply @TermSubst with (D := D).
-      * assumption.
-      * ih.
-    + apply @TermSubst with (D := D).
-      * assumption.
-      * ih.
+    + emagic.
+    + emagic.
+    + emagic.
 
 Defined.
