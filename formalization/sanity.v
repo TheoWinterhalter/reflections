@@ -76,7 +76,7 @@ Ltac magic := magicn (S (S (S 0))).
 
 Ltac emagicn n :=
   match eval compute in n with
-  | 0 => magic
+  | 0 => ih || easy
   | S ?n =>
     eassumption ||
     emagicn n ||
