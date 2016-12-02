@@ -79,10 +79,13 @@ Ltac emagicn n :=
   | 0 => ih || easy
   | S ?n =>
     eassumption ||
-    emagicn n ||
+    ih ||
+    easy ||
     (eapply TySubst ; emagicn n) ||
     (eapply TermSubst ; emagicn n) ||
-    (econstructor ; emagicn n)
+    (constructor ; emagicn n) ||
+    (econstructor ; emagicn n) ||
+    emagicn n
   end.
 
 Ltac emagic := emagicn (S (S (S 0))).
