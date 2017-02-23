@@ -24,11 +24,16 @@ with term : Type :=
      | cond : type -> term -> term -> term -> term
 
 with substitution : Type :=
-     | sbzero : context -> type -> term -> substitution
-     | sbweak : context -> type -> substitution
-     | sbshift : context -> type -> substitution -> substitution
-     | sbid : context -> substitution
+     | sbzero : term -> substitution
+     | sbweak : substitution
+     | sbshift : substitution -> substitution
+     | sbid : substitution
      | sbcomp : substitution -> substitution -> substitution.
+
+Notation "'sbweak'' x y" := (sbweak) (at level 10, only parsing).
+Notation "'sbshift'' x y" := (sbshift) (at level 10, only parsing).
+Notation "'sbid'' x" := (sbid) (at level 0, only parsing).
+Notation "'sbzero'' x y" := (sbzero) (at level 10, only parsing).
 
 Parameter reflective : type -> type.
 

@@ -149,7 +149,7 @@ Proof.
       - apply (@ett.SubstTrans G D sb1 sb2 sb3) ; auto.
 
       (* CongSubstZero *)
-      - apply (@ett.CongSubstZero G1 G2) ; auto.
+      - apply ett.CongSubstZero ; auto.
 
       (* CongSubstWeak *)
       - apply ett.CongSubstWeak ; auto.
@@ -170,13 +170,13 @@ Proof.
       - apply ett.WeakNat ; auto.
 
       (* WeakZero *)
-      - apply ett.WeakZero ; auto.
+      - apply @ett.WeakZero with (A := A) ; auto.
 
       (* ShiftZero *)
       - apply ett.ShiftZero ; auto.
 
       (* CompShift *)
-      - apply ett.CompShift ; auto.
+      - apply @ett.CompShift with (D := D) ; auto.
 
       (* CompIdRight *)
       - apply ett.CompIdRight ; auto.
@@ -266,7 +266,7 @@ Proof.
       - apply ett.EqSubstZeroZero ; auto.
 
       (* EqSubstZeroSucc *)
-      - apply ett.EqSubstZeroSucc ; auto.
+      - apply @ett.EqSubstZeroSucc with (B := B) ; auto.
 
       (* EqSubstShiftZero *)
       - apply (@ett.EqSubstShiftZero G D) ; auto.
@@ -284,7 +284,7 @@ Proof.
       - apply (@ett.EqSubstRefl G D) ; auto.
 
       (* EqSubstJ *)
-      - apply ett.EqSubstJ ; auto.
+      - apply @ett.EqSubstJ with (D := D) ; auto.
 
      (* This rule is subsumed by EqTermExfalso *)
       (* EqSubstExfalso *)
@@ -300,7 +300,7 @@ Proof.
       - apply (@ett.EqSubstFalse G D) ; auto.
 
       (* EqSubstCond *)
-      - apply ett.EqSubstCond ; auto.
+      - apply @ett.EqSubstCond with (D := D) ; auto.
 
       (* EqTermExfalso *)
       - apply (@ett.EqTermExfalso G A u v w); auto.

@@ -231,7 +231,7 @@ Proof.
       (* TermAbs *)
       - { destruct (apply_Subst _ _ _ _ i0 H2) as [A' [sA eA]].
           assert (
-            ptt.issubst (sbshift G A sbs)
+            ptt.issubst (sbshift' G A sbs)
                         (ctxextend G (Subst A sbs))
                         (ctxextend G0 A)
           ).
@@ -248,7 +248,7 @@ Proof.
 
       (* TermApp *)
       - { assert (
-            ptt.issubst (sbshift G A sbs)
+            ptt.issubst (sbshift' G A sbs)
                         (ctxextend G (Subst A sbs))
                         (ctxextend G0 A)
           ).
@@ -327,7 +327,7 @@ Proof.
 
       (* TermCond *)
       - { assert (
-            ptt.issubst (sbshift G Bool sbs)
+            ptt.issubst (sbshift' G Bool sbs)
                         (ctxextend G (Subst Bool sbs))
                         (ctxextend G0 Bool)
           ).
@@ -452,7 +452,7 @@ Proof.
 
       (* TyProd *)
       - { assert (
-            ptt.issubst (sbshift G A sbs)
+            ptt.issubst (sbshift' G A sbs)
                         (ctxextend G (Subst A sbs))
                         (ctxextend G0 A)
           ).

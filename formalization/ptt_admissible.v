@@ -1,6 +1,8 @@
 (* Admissibile ptt rules. *)
 
-Require Import syntax ptt myptt ptt_tactics.
+Require Import syntax ptt ptt_tactics.
+
+
 
 (* Some preliminary lemmata *)
 Lemma EqTyWeakNat :
@@ -11,10 +13,10 @@ Lemma EqTyWeakNat :
     isctx G ->
     isctx D ->
     eqtype (ctxextend G (Subst A sbs))
-           (Subst (Subst B (sbweak D A)) (sbshift G A sbs))
-           (Subst (Subst B sbs) (sbweak G (Subst A sbs))).
+           (Subst (Subst B sbweak) (sbshift sbs))
+           (Subst (Subst B sbs) sbweak).
 Proof.
-  intros. gocompsubst. gocompsubst.
+  intros. magic.
   Unshelve. assumption.
 Defined.
 
@@ -25,17 +27,10 @@ Lemma compWeakZero :
     istype G A ->
     istype G B ->
     isterm G u B ->
-    eqtype G A (Subst A (sbcomp (sbweak G B) (sbzero G B u))).
+    eqtype G A (Subst A (sbcomp (sbweak) (sbzero u))).
 Proof.
-  intros.
-  eapply EqTySym ; try magic.
-  eapply EqTyTrans ; [
-    eapply CongTySubst ; [
-      eapply WeakZero ; magic
-    | magic ..
-    ]
-  | magic ..
-  ].
+  intros. magic.
+  Unshelve. assumption.
 Defined.
 
 Lemma EqTyWeakZero :
@@ -44,10 +39,10 @@ Lemma EqTyWeakZero :
     istype G A ->
     istype G B ->
     isterm G u B ->
-    eqtype G A (Subst (Subst A (sbweak G B)) (sbzero G B u)).
+    eqtype G A (Subst (Subst A sbweak) (sbzero u)).
 Proof.
-  intros.
-  gocompsubst. eapply EqTySym ; try magic. apply compWeakZero ; magic.
+  intros. magic.
+  Unshelve. assumption.
 Defined.
 
 Lemma EqTyShiftZero :
@@ -60,11 +55,11 @@ Lemma EqTyShiftZero :
     isctx D ->
     eqtype
       G
-      (Subst (Subst B (sbshift G A sbs)) (sbzero G (Subst A sbs) (subst v sbs)))
-      (Subst (Subst B (sbzero D A v)) sbs).
+      (Subst (Subst B (sbshift sbs)) (sbzero (subst v sbs)))
+      (Subst (Subst B (sbzero v)) sbs).
 Proof.
-  intros. gocompsubst. gocompsubst.
-  Unshelve. magic.
+  intros. magic.
+  Unshelve. all:strictmagic.
 Defined.
 
 Lemma EqTyCongZero :
@@ -80,20 +75,10 @@ Lemma EqTyCongZero :
     isterm G u1 A1 ->
     isterm G u2 B1 ->
     eqtype G
-           (Subst A2 (sbzero G A1 u1))
-           (Subst B2 (sbzero G B1 u2)).
+           (Subst A2 (sbzero u1))
+           (Subst B2 (sbzero u2)).
 Proof.
-  intros.
-  assert (isterm G u2 A1).
-  { eapply TermTyConv ; [
-      eassumption
-    | magic ..
-    ].
-  }
-  eapply CongTySubst ; [
-    magic ..
-  | eapply SubstCtxConv ; magic
-  ].
+  intros. magic.
 Defined.
 
 Lemma EqTyCongShift :
@@ -112,29 +97,14 @@ Lemma EqTyCongShift :
     istype (ctxextend D A1) B1 ->
     istype (ctxextend D A2) B2 ->
     eqtype (ctxextend G1 (Subst A1 sbs1))
-           (Subst B1 (sbshift G1 A1 sbs1))
-           (Subst B2 (sbshift G2 A2 sbs2)).
+           (Subst B1 (sbshift sbs1))
+           (Subst B2 (sbshift sbs2)).
 Proof.
-  intros.
-  assert (issubst sbs2 G1 D).
-  { eapply SubstCtxConv ; magic. }
-  assert (issubst sbs1 G2 D).
-  { eapply SubstCtxConv ; magic. }
-  assert (istype (ctxextend D A1) B2).
-  { eapply TyCtxConv ; [
-      eassumption
-    | magic ..
-    ].
-  }
-  assert (eqsubst sbs2 sbs1 G2 D).
-  { apply SubstSym ; try assumption.
-    eapply EqSubstCtxConv ; magic.
-  }
-  eapply CongTySubst ; [
-    magic ..
-  | eapply SubstCtxConv ; magic
-  ].
-  Unshelve. all:assumption.
+  intros. magic.
+  Unshelve. all:try strictmagic.
+  (* I'm not very happy with the fact that I need to do it twice. *)
+  (* But we have to blame the 'context' goal. *)
+  all:strictmagic.
 Defined.
 
 Lemma EqTyCongWeak :
@@ -149,18 +119,10 @@ Lemma EqTyCongWeak :
     istype G2 A2 ->
     istype G2 B2 ->
     eqtype (ctxextend G1 A1)
-           (Subst B1 (sbweak G1 A1))
-           (Subst B2 (sbweak G2 A2)).
+           (Subst B1 sbweak)
+           (Subst B2 sbweak).
 Proof.
-  intros.
-  assert (istype G1 A2).
-  { eapply TyCtxConv ; [ eassumption | magic .. ]. }
-  assert (istype G1 B2).
-  { eapply TyCtxConv ; [ eassumption | magic .. ]. }
-  eapply CongTySubst ; [
-    magic ..
-  | eapply SubstCtxConv ; magic
-  ].
+  intros. magic.
 Defined.
 
 Lemma EqSubstWeakNat :
@@ -172,92 +134,13 @@ Lemma EqSubstWeakNat :
     isctx G ->
     isctx D ->
     eqterm (ctxextend G (Subst A sbs))
-           (subst (subst u (sbweak D A)) (sbshift G A sbs))
-           (subst (subst u sbs) (sbweak G (Subst A sbs)))
-           (Subst (Subst B sbs) (sbweak G (Subst A sbs))).
+           (subst (subst u sbweak) (sbshift sbs))
+           (subst (subst u sbs) sbweak)
+           (Subst (Subst B sbs) sbweak).
 Proof.
-  intros. eapply EqTyConv.
-  - gocompsubst ; try eassumption ; try magic.
-    + gocompsubst ; try eassumption ; try magic.
-      * { eapply TermTyConv.
-          - eapply TermSubst ; try magic.
-            eapply TermSubst ; try magic.
-            eassumption.
-          - gocompsubst.
-          - magic.
-          - magic.
-          - magic.
-        }
-      * { eapply TermTyConv.
-          - eapply TermSubst ; try magic.
-            eapply TermSubst ; try magic.
-            eassumption.
-          - gocompsubst.
-          - magic.
-          - magic.
-          - magic.
-        }
-      * { eapply TermTyConv.
-          - eapply TermSubst ; try magic.
-            eassumption.
-          - magic.
-          - magic.
-          - magic.
-          - magic.
-        }
-      * gocompsubst.
-      * { eapply TermTyConv.
-          - eapply TermSubst ; try magic.
-            eassumption.
-          - gocompsubst.
-          - magic.
-          - magic.
-          - magic.
-        }
-    + { eapply TermTyConv.
-        - eapply TermSubst ; try magic.
-          eapply TermSubst ; try magic.
-          eassumption.
-        - gocompsubst.
-        - magic.
-        - magic.
-        - magic.
-      }
-    + { eapply TermTyConv.
-        - eapply TermSubst ; try magic.
-          eapply TermSubst ; try magic.
-          eassumption.
-        - gocompsubst.
-        - magic.
-        - magic.
-        - magic.
-      }
-    + { eapply TermTyConv.
-        - eapply TermSubst ; try magic.
-          eapply TermSubst ; try magic.
-          eassumption.
-        - apply EqTySym ; try magic. apply EqTyWeakNat ; magic.
-        - magic.
-        - magic.
-        - magic.
-      }
-  - apply EqTyWeakNat ; magic.
-  - magic.
-  - magic.
-  - magic.
-  - magic.
-  - { eapply TermTyConv.
-      - eapply TermSubst ; try magic.
-        eapply TermSubst ; try magic.
-        eassumption.
-      - apply EqTySym ; try magic. apply EqTyWeakNat ; magic.
-      - magic.
-      - magic.
-      - magic.
-    }
-  Unshelve. all:magic.
+  intros. magic.
+  Unshelve. all:strictmagic.
 Defined.
-
 
 Lemma EqSubstWeakZero :
   forall {G A B u v},
@@ -267,56 +150,12 @@ Lemma EqSubstWeakZero :
     isterm G v B ->
     isctx G ->
     eqterm G
-           (subst (subst u (sbweak G B)) (sbzero G B v))
+           (subst (subst u sbweak) (sbzero v))
            u
            A.
 Proof.
-  intros.
-  gocompsubst ; try eassumption ; try magic.
-  - eapply EqTrans.
-    + eapply CongTermSubst ; [
-        eapply WeakZero ; magic
-      | magic ..
-      ].
-    + apply EqIdSubst ; try magic.
-      eapply TermTyConv ; [
-        eassumption
-      | try magic ..
-      ].
-      apply compWeakZero ; magic.
-    + assumption.
-    + magic.
-    + magic.
-    + eapply TermTyConv ; [
-        eapply TermSubst ; try eassumption ; try magic
-      | try magic ..
-      ].
-      apply EqTySym ; magic.
-    + eapply TermTyConv ; [
-        eassumption
-      | try magic ..
-      ].
-      apply compWeakZero ; magic.
-  - eapply TermTyConv ; [
-      (eapply TermSubst ; try magic) ;
-      (eapply TermSubst ; try magic) ;
-      eassumption
-    | try magic ..
-    ].
-    gocompsubst.
-  - eapply TermTyConv ; [
-      eassumption
-    | try magic ..
-    ].
-    apply compWeakZero ; magic.
-  - apply EqTySym ; try magic.
-    apply EqTyWeakZero ; magic.
-  - eapply TermTyConv ; [
-      eassumption
-    | try magic ..
-    ].
-    apply EqTyWeakZero ; magic.
-  Unshelve. all:magic.
+  intros. magic.
+  Unshelve. all:strictmagic.
 Defined.
 
 Lemma EqTermShiftZero :
@@ -330,77 +169,12 @@ Lemma EqTermShiftZero :
     isctx D ->
     eqterm
       G
-      (subst (subst u (sbshift G A sbs)) (sbzero G (Subst A sbs) (subst v sbs)))
-      (subst (subst u (sbzero D A v)) sbs)
-      (Subst (Subst B (sbzero D A v)) sbs).
+      (subst (subst u (sbshift sbs)) (sbzero (subst v sbs)))
+      (subst (subst u (sbzero v)) sbs)
+      (Subst (Subst B (sbzero v)) sbs).
 Proof.
-  intros.
-  gocompsubst.
-  - eapply TermTyConv ; [
-      (eapply TermSubst ; try magic) ;
-      (eapply TermSubst ; try magic) ;
-      eassumption
-    | try magic ..
-    ].
-    apply EqTyShiftZero ; magic.
-  - gocompsubst.
-    + eapply TermTyConv ; [
-        (eapply TermSubst ; try magic) ;
-        (eapply TermSubst ; try magic) ;
-        eassumption
-      | try magic ..
-      ].
-      gocompsubst.
-    + eassumption.
-    + eapply CongTermSubst ; [
-        eapply ShiftZero ; magic
-      | magic ..
-      ].
-    + eapply TermTyConv ; [
-        (eapply TermSubst ; try magic) ;
-        (eapply TermSubst ; try magic) ;
-        eassumption
-      | try magic ..
-      ].
-      gocompsubst.
-    + eapply TermTyConv ; [
-        (eapply TermSubst ; try magic) ;
-        eassumption
-      | try magic ..
-      ].
-    + eapply TermTyConv ; [
-        (eapply TermSubst ; try magic) ;
-        eassumption
-      | try magic ..
-      ].
-    + gocompsubst.
-    + eapply TermTyConv ; [
-        (eapply TermSubst ; try magic) ;
-        (eapply TermSubst ; try magic) ;
-        eassumption
-      | try magic ..
-      ].
-    + eapply TermTyConv ; [
-        (eapply TermSubst ; try magic) ;
-        eassumption
-      | try magic ..
-      ].
-      gocompsubst.
-  - eapply TermTyConv ; [
-      (eapply TermSubst ; try magic) ;
-      (eapply TermSubst ; try magic) ;
-      eassumption
-    | try magic ..
-    ].
-    gocompsubst.
-  - eapply TermTyConv ; [
-      (eapply TermSubst ; try magic) ;
-      (eapply TermSubst ; try magic) ;
-      eassumption
-    | try magic ..
-    ].
-    gocompsubst.
-  Unshelve. all:magic.
+  intros. magic.
+  Unshelve. all:strictmagic.
 Defined.
 
 Lemma EqTermCongWeak :
@@ -418,40 +192,11 @@ Lemma EqTermCongWeak :
     isterm G1 u1 B1 ->
     isterm G2 u2 B2 ->
     eqterm (ctxextend G1 A1)
-           (subst u1 (sbweak G1 A1))
-           (subst u2 (sbweak G2 A2))
-           (Subst B1 (sbweak G1 A1)).
+           (subst u1 sbweak)
+           (subst u2 sbweak)
+           (Subst B1 sbweak).
 Proof.
-  intros.
-  assert (istype G1 A2).
-  { eapply TyCtxConv ; [
-      eassumption
-    | magic ..
-    ].
-  }
-  assert (istype G1 B2).
-  { eapply TyCtxConv ; [
-      eassumption
-    | magic ..
-    ].
-  }
-  assert (isterm G1 u2 B1).
-  { eapply TermTyConv ; [
-      eapply TermCtxConv ; [
-        eassumption
-      | magic ..
-      ]
-    | magic ..
-    ].
-  }
-  eapply CongTermSubst ; [
-    eapply CongSubstWeak ; magic
-  | try magic ..
-  ].
-  eapply SubstCtxConv ; [
-    eapply SubstWeak ; magic
-  | magic ..
-  ].
+  intros. magic.
 Defined.
 
 
@@ -468,7 +213,7 @@ Lemma JTyConv :
     istype
       (ctxextend
          (ctxextend D A)
-         (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
+         (Id (Subst A sbweak) (subst u sbweak) (var 0))
       )
       C ->
     isterm
@@ -477,24 +222,18 @@ Lemma JTyConv :
       (Subst
          (Subst
             C
-            (sbshift
-               D
-               (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-               (sbzero D A u))) (sbzero D (Id A u u) (refl A u))) ->
-    isterm D v A ->
+            (sbshift (sbzero u)))
+         (sbzero (refl A u))) ->
     isterm D p (Id A u v) ->
     eqtype
       G
       (Subst
          (Subst
             (Subst C
-                   (sbshift
-                      D
-                      (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-                      (sbzero D A v)
+                   (sbshift (sbzero v)
                    )
             )
-            (sbzero D (Id A u v) p)
+            (sbzero p)
          )
          sbs
       )
@@ -502,88 +241,79 @@ Lemma JTyConv :
          (Subst
             (Subst C
                    (sbshift
-                      (ctxextend G (Subst A sbs))
-                      (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-                      (sbshift G A sbs)
+                      (sbshift sbs)
                    )
             )
             (sbshift
-               G
-               (Id
-                  (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-                  (subst (subst u sbs) (sbweak G (Subst A sbs)))
-                  (var 0)
-               )
-               (sbzero G (Subst A sbs) (subst v sbs))
+               (sbzero (subst v sbs))
             )
          )
          (sbzero
-            G
-            (Id (Subst A sbs) (subst u sbs) (subst v sbs))
             (subst p sbs)
          )
       ).
 Proof.
   intros.
-  (* First let's have some assertions that we won't keep proving. *)
+  (*! First let's have some assertions that we won't keep proving. !*)
   assert (isterm D (refl A u) (Id A u u)).
   { now apply TermRefl. }
   assert (
     istype (ctxextend D A)
-           (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
+           (Id (Subst A sbweak) (subst u sbweak) (var 0))
   ).
   { apply TyId ; magic. }
   assert (eqctx D D).
   { now apply CtxRefl. }
-  assert (eqtype D (Subst (Subst A (sbweak D A)) (sbzero D A v)) A).
-  { apply myEqTySym ; try magic.
-    now apply EqTyWeakZero.
-  }
-  assert (isterm D u (Subst (Subst A (sbweak D A)) (sbzero D A v))).
-  { eapply TermTyConv ; [ eassumption | magic .. ]. }
+  assert (eqtype D (Subst (Subst A sbweak) (sbzero v)) A).
+  { magic. Unshelve. assumption. }
+  assert (isterm D u (Subst (Subst A sbweak) (sbzero v))).
+  { magic. Unshelve. assumption. }
   assert (
     eqterm D
-           (subst (subst u (sbweak D A)) (sbzero D A v)) u
-           (Subst (Subst A (sbweak D A)) (sbzero D A v))
+           (subst (subst u sbweak) (sbzero v)) u
+           (Subst (Subst A sbweak) (sbzero v))
   ).
-  { apply EqSubstWeakZero ; try assumption. magic. }
-  assert (isterm D (subst (var 0) (sbzero D A v)) A).
+  { eapply EqSubstWeakZero ; try assumption ; magic.
+    Unshelve. assumption.
+  }
+  assert (isterm D (subst (var 0) (sbzero v)) A).
   { eapply TermTyConv ; [
       eapply TermSubst ; magic
     | magic ..
     ].
   }
-  assert (eqterm D (subst (var 0) (sbzero D A v)) v
-    (Subst (Subst A (sbweak D A)) (sbzero D A v))).
+  assert (eqterm D (subst (var 0) (sbzero v)) v
+    (Subst (Subst A sbweak) (sbzero v))).
   { eapply EqTyConv ; [
       eapply EqSubstZeroZero ; magic
     | magic ..
     ].
+    Unshelve. all:assumption.
   }
-  assert (isterm D v (Subst (Subst A (sbweak D A)) (sbzero D A v))).
+  assert (isterm D v (Subst (Subst A sbweak) (sbzero v))).
   { eapply TermTyConv ; [ eassumption | magic .. ]. }
   assert (
     eqtype
       D
       (Id
-         (Subst (Subst A (sbweak D A)) (sbzero D A v))
-         (subst (subst u (sbweak D A)) (sbzero D A v))
-         (subst (var 0) (sbzero D A v)))
+         (Subst (Subst A sbweak) (sbzero v))
+         (subst (subst u sbweak) (sbzero v))
+         (subst (var 0) (sbzero v)))
       (Id A u v)
   ).
   { magic. }
   assert (
     eqtype D
-    (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-       (sbzero D A v)) (Id A u v)
+    (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+       (sbzero v)) (Id A u v)
   ).
   { gopushsubst. }
   assert (
     eqctx
       (ctxextend
          D
-         (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-                (sbzero D A v)))
+         (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+                (sbzero v)))
       (ctxextend D (Id A u v))
   ).
   { magic. }
@@ -591,19 +321,19 @@ Proof.
   { now apply CtxExtend. }
   assert (isctx
     (ctxextend (ctxextend D A)
-       (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0)))).
+       (Id (Subst A sbweak) (subst u sbweak) (var 0)))).
   { now apply CtxExtend. }
   assert (isterm G (refl (Subst A sbs) (subst u sbs))
     (Id (Subst A sbs) (subst u sbs) (subst u sbs))).
   { apply TermRefl ; magic. }
   assert (
     isterm (ctxextend G (Subst A sbs)) (var 0)
-    (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
+    (Subst (Subst A sbs) sbweak)
   ).
   { apply TermVarZero ; magic. }
   assert (istype (ctxextend G (Subst A sbs))
-    (Id (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-       (subst (subst u sbs) (sbweak G (Subst A sbs))) (var 0))
+    (Id (Subst (Subst A sbs) sbweak)
+       (subst (subst u sbs) sbweak) (var 0))
   ).
   { apply TyId ; magic. }
   assert (eqctx G G).
@@ -613,8 +343,8 @@ Proof.
       (sbcomp
          sbs
          (sbcomp
-            (sbweak G (Subst A sbs))
-            (sbzero G (Subst A sbs) (subst v sbs)))
+            sbweak
+            (sbzero (subst v sbs)))
       )
       sbs
       G D
@@ -627,25 +357,26 @@ Proof.
       ]
     | magic ..
     ].
+    Unshelve. all:strictmagic.
   }
   assert (eqtype D A A).
   { apply EqTyRefl ; assumption. }
   assert (eqtype G
-    (Subst (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-       (sbzero G (Subst A sbs) (subst v sbs))) (Subst A sbs)).
-  { gocompsubst. gocompsubst.
-    Unshelve. assumption.
+    (Subst (Subst (Subst A sbs) sbweak)
+       (sbzero (subst v sbs))) (Subst A sbs)).
+  { gocompsubst.
+    Unshelve. all:strictmagic.
   }
   assert (eqterm D u u A).
   { apply EqRefl ; assumption. }
   assert (
     eqsubst
       (sbcomp sbs
-              (sbcomp (sbweak G (Subst A sbs))
-                      (sbzero G (Subst A sbs) (subst v sbs))
+              (sbcomp sbweak
+                      (sbzero (subst v sbs))
               )
       )
-      (sbcomp (sbweak D A) (sbcomp (sbzero D A v) sbs))
+      (sbcomp sbweak (sbcomp (sbzero v) sbs))
       G
       D
   ).
@@ -655,39 +386,22 @@ Proof.
       | eapply SubstRefl ; magic
       | magic ..
       ]
-    | try magic ..
-    ].
-    eapply mySubstSym ; try magic.
-    eapply SubstTrans ; [
-      eapply CompAssoc ; magic
-    | try magic ..
-    ].
-    eapply SubstTrans ; [
-      eapply CongSubstComp ; [
-        eapply SubstRefl ; magic
-      | eapply WeakZero ; magic
-      | magic ..
-      ]
-    | try magic ..
-    ].
-    eapply SubstTrans ; [
-      eapply CompIdLeft ; magic
     | magic ..
     ].
-    Unshelve. assumption.
+    Unshelve. all:strictmagic.
   }
   assert (
     eqtype G
            (Subst A
                   (sbcomp sbs
-                          (sbcomp (sbweak G (Subst A sbs))
-                                  (sbzero G (Subst A sbs) (subst v sbs))
+                          (sbcomp sbweak
+                                  (sbzero (subst v sbs))
                           )
                   )
            )
            (Subst A
-                  (sbcomp (sbweak D A)
-                          (sbcomp (sbzero D A v) sbs)
+                  (sbcomp sbweak
+                          (sbcomp (sbzero v) sbs)
                   )
            )
   ).
@@ -696,50 +410,36 @@ Proof.
     isterm G
            (subst u sbs)
            (Subst (Subst A sbs)
-                  (sbcomp (sbweak G (Subst A sbs))
-                          (sbzero G (Subst A sbs) (subst v sbs))))
+                  (sbcomp sbweak
+                          (sbzero (subst v sbs))))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [ magic | eassumption | magic .. ]
     | try magic ..
     ].
-    gocompsubst. gocompsubst. gocompsubst.
-    Unshelve. assumption.
   }
   assert (
     isterm G
-           (subst (subst (subst u sbs) (sbweak G (Subst A sbs)))
-                  (sbzero G (Subst A sbs) (subst v sbs)))
+           (subst (subst (subst u sbs) sbweak)
+                  (sbzero (subst v sbs)))
            (Subst (Subst A sbs)
-                  (sbcomp (sbweak G (Subst A sbs))
-                          (sbzero G (Subst A sbs) (subst v sbs))))
+                  (sbcomp sbweak
+                          (sbzero (subst v sbs))))
   ).
-  { eapply TermTyConv ; [
-      eapply TermSubst ; [
-        magic
-      | eapply TermSubst ; [
-          magic
-        | eapply TermSubst ; [ magic | eassumption | magic .. ]
-        | magic ..
-        ]
-      | magic ..
-      ]
-    | try magic ..
-    ].
-    gocompsubst.
-    Unshelve. all:assumption.
+  { magic.
+    Unshelve. all:strictmagic.
   }
   assert (
     eqsubst
       (sbcomp sbs
               (sbcomp
-                 (sbcomp (sbweak G (Subst A sbs))
-                         (sbzero G (Subst A sbs) (subst v sbs)))
-                 (sbcomp (sbweak G (Subst A sbs))
-                         (sbzero G (Subst A sbs) (subst v sbs)))))
+                 (sbcomp sbweak
+                         (sbzero (subst v sbs)))
+                 (sbcomp sbweak
+                         (sbzero (subst v sbs)))))
       (sbcomp sbs
-              (sbcomp (sbweak G (Subst A sbs))
-                      (sbzero G (Subst A sbs) (subst v sbs))))
+              (sbcomp sbweak
+                      (sbzero (subst v sbs))))
       G
       D
   ).
@@ -755,34 +455,34 @@ Proof.
     | eapply SubstRefl ; magic
     | magic ..
     ].
-    Unshelve. assumption.
+    Unshelve. all:strictmagic.
   }
   assert (
     eqtype G
            (Subst A
                   (sbcomp sbs
                           (sbcomp
-                             (sbcomp (sbweak G (Subst A sbs))
-                                     (sbzero G (Subst A sbs) (subst v sbs)))
-                             (sbcomp (sbweak G (Subst A sbs))
-                                     (sbzero G (Subst A sbs) (subst v sbs))))))
+                             (sbcomp sbweak
+                                     (sbzero (subst v sbs)))
+                             (sbcomp sbweak
+                                     (sbzero (subst v sbs))))))
            (Subst A
                   (sbcomp sbs
-                          (sbcomp (sbweak G (Subst A sbs))
-                                  (sbzero G (Subst A sbs) (subst v sbs)))))
+                          (sbcomp sbweak
+                                  (sbzero (subst v sbs)))))
   ).
   { eapply CongTySubst ; [ eassumption | magic .. ]. }
   assert (
     isterm G
            (subst (subst u sbs)
-                  (sbcomp (sbweak G (Subst A sbs))
-                          (sbzero G (Subst A sbs) (subst v sbs))
+                  (sbcomp sbweak
+                          (sbzero (subst v sbs))
                   )
            )
            (Subst A
                   (sbcomp sbs
-                          (sbcomp (sbweak G (Subst A sbs))
-                                  (sbzero G (Subst A sbs) (subst v sbs))
+                          (sbcomp sbweak
+                                  (sbzero (subst v sbs))
                           )
                   )
            )
@@ -791,102 +491,97 @@ Proof.
       eapply TermSubst ; [ magic | eassumption | magic .. ]
     | try magic ..
     ].
-    gocompsubst. gocompsubst.
-    Unshelve. assumption.
   }
   assert (
     isterm G
            (subst u sbs)
            (Subst A
                   (sbcomp sbs
-                          (sbcomp (sbweak G (Subst A sbs))
-                                  (sbzero G (Subst A sbs) (subst v sbs)))))
+                          (sbcomp sbweak
+                                  (sbzero (subst v sbs)))))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [ magic | eassumption | magic .. ]
     | magic ..
     ].
+    Unshelve. all:strictmagic.
   }
   assert (
     eqterm G
-    (subst (subst (subst u sbs) (sbweak G (Subst A sbs)))
-       (sbzero G (Subst A sbs) (subst v sbs))) (subst u sbs)
-    (Subst (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-       (sbzero G (Subst A sbs) (subst v sbs)))
+    (subst (subst (subst u sbs) sbweak)
+       (sbzero (subst v sbs))) (subst u sbs)
+    (Subst (Subst (Subst A sbs) sbweak)
+       (sbzero (subst v sbs)))
   ).
-  { gocompsubst. gocompsubst.
-    Unshelve. all:assumption.
+  { gocompsubst.
+    Unshelve. all:strictmagic.
   }
   assert (
     isterm G
-           (subst (var 0) (sbzero G (Subst A sbs) (subst v sbs)))
+           (subst (var 0) (sbzero (subst v sbs)))
            (Subst A sbs)
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [ magic | eassumption | magic .. ]
-    | try magic ..
-    ].
-    eassumption.
-  }
-  assert (
-    eqterm G (subst (var 0) (sbzero G (Subst A sbs) (subst v sbs)))
-    (subst v sbs)
-    (Subst (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-       (sbzero G (Subst A sbs) (subst v sbs)))
-  ).
-  { eapply EqTyConv ; [
-      eapply EqSubstZeroZero ; magic
-    | eapply myEqTySym ; try magic ; eassumption
     | magic ..
     ].
   }
   assert (
-    eqtype G (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) sbs)
-    (Subst (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-       (sbzero G (Subst A sbs) (subst v sbs)))
+    eqterm G (subst (var 0) (sbzero (subst v sbs)))
+    (subst v sbs)
+    (Subst (Subst (Subst A sbs) sbweak)
+       (sbzero (subst v sbs)))
   ).
-  { gocompsubst. gocompsubst. gocompsubst. gocompsubst.
-    Unshelve. assumption.
+  { eapply EqTyConv ; [
+      eapply EqSubstZeroZero ; magic
+    | eapply EqTySym ; try magic ; eassumption
+    | magic ..
+    ].
+    Unshelve. magic.
   }
   assert (
+    eqtype G (Subst (Subst (Subst A sbweak) (sbzero v)) sbs)
+    (Subst (Subst (Subst A sbs) sbweak)
+       (sbzero (subst v sbs)))
+  ).
+  { magic. }
+  assert (
     isterm G (subst u sbs)
-    (Subst (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-       (sbzero G (Subst A sbs) (subst v sbs)))
+    (Subst (Subst (Subst A sbs) sbweak)
+       (sbzero (subst v sbs)))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [ magic | eassumption | magic .. ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     isterm G
            (subst v sbs)
-           (Subst (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-                  (sbzero G (Subst A sbs) (subst v sbs)))
+           (Subst (Subst (Subst A sbs) sbweak)
+                  (sbzero (subst v sbs)))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [ magic | eassumption | magic .. ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqtype G
            (Subst
-              (Id (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-                  (subst (subst u sbs) (sbweak G (Subst A sbs)))
-                  (var 0)) (sbzero G (Subst A sbs) (subst v sbs)))
+              (Id (Subst (Subst A sbs) sbweak)
+                  (subst (subst u sbs) sbweak)
+                  (var 0)) (sbzero (subst v sbs)))
            (Id (Subst A sbs) (subst u sbs) (subst v sbs))
   ).
-  { gopushsubst. apply CongId ; try magic ; try assumption. }
+  { magic. }
   assert (
     eqctx
     (ctxextend G
        (Subst
-          (Id (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-             (subst (subst u sbs) (sbweak G (Subst A sbs)))
-             (var 0)) (sbzero G (Subst A sbs) (subst v sbs))))
+          (Id (Subst (Subst A sbs) sbweak)
+             (subst (subst u sbs) sbweak)
+             (var 0)) (sbzero (subst v sbs))))
     (ctxextend G (Id (Subst A sbs) (subst u sbs) (subst v sbs)))
   ).
   { magic. }
@@ -894,55 +589,56 @@ Proof.
   { magic. }
   assert (
     eqtype (ctxextend G (Subst A sbs))
-    (Subst (Subst A (sbweak D A)) (sbshift G A sbs))
-    (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
+    (Subst (Subst A sbweak) (sbshift sbs))
+    (Subst (Subst A sbs) sbweak)
   ).
-  { apply EqTyWeakNat ; assumption. }
+  { eapply EqTyWeakNat ; eassumption. }
   assert (
     eqtype (ctxextend G (Subst A sbs))
-           (Subst (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) sbs)
-                  (sbweak G (Subst A sbs)))
-           (Subst (Subst A (sbweak D A)) (sbshift G A sbs))
+           (Subst (Subst (Subst (Subst A sbweak) (sbzero v)) sbs)
+                  sbweak)
+           (Subst (Subst A sbweak) (sbshift sbs))
   ).
-  { eapply EqTySym ; try magic.
-    gocompsubst. gocompsubst.
-    Unshelve. assumption.
+  { eapply EqTySym ; magic.
+    Unshelve. all:strictmagic.
   }
   assert (
     eqsubst
-    (sbcomp (sbweak D A)
-       (sbcomp (sbzero D A v) (sbcomp sbs (sbweak G (Subst A sbs)))))
-    (sbcomp (sbweak D A)
-       (sbcomp (sbzero D A v) (sbcomp (sbweak D A) (sbshift G A sbs))))
+    (sbcomp sbweak
+       (sbcomp (sbzero v) (sbcomp sbs sbweak)))
+    (sbcomp sbweak
+       (sbcomp (sbzero v) (sbcomp sbweak (sbshift sbs))))
     (ctxextend G (Subst A sbs)) D
   ).
   { eapply CongSubstComp ; [
       eapply CongSubstComp ; [
-        eapply mySubstSym ; magic
+        eapply SubstSym ; magic
       | eapply SubstRefl ; magic
       | magic ..
       ]
     | eapply SubstRefl ; magic
     | magic ..
     ].
-    Unshelve. assumption.
+    Unshelve. all:strictmagic.
   }
   assert (
     eqtype (ctxextend G (Subst A sbs))
-    (Subst (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) (sbweak D A))
-       (sbshift G A sbs))
-    (Subst (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) sbs)
-       (sbweak G (Subst A sbs)))
+    (Subst (Subst (Subst (Subst A sbweak) (sbzero v)) sbweak)
+       (sbshift sbs))
+    (Subst (Subst (Subst (Subst A sbweak) (sbzero v)) sbs)
+       sbweak)
   ).
-  { gocompsubst. gocompsubst. gocompsubst. gocompsubst. gocompsubst.
-    gocompsubst.
-    Unshelve. assumption.
+  { (* For some reason I would assume this proof should be magicable. *)
+    gocompsubst. gocompsubst. gocompsubst. gocompsubst. gocompsubst.
+    gocompsubst. simplify ; try magic. simplify ; try magic.
+    eapply EqTySym ; magic.
+    Unshelve. all:strictmagic.
   }
   assert (
     isterm (ctxextend G (Subst A sbs))
-    (subst (subst u (sbweak D A)) (sbshift G A sbs))
-    (Subst (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) sbs)
-       (sbweak G (Subst A sbs)))
+    (subst (subst u sbweak) (sbshift sbs))
+    (Subst (Subst (Subst (Subst A sbweak) (sbzero v)) sbs)
+       sbweak)
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [
@@ -950,32 +646,45 @@ Proof.
       | eapply TermSubst ; [ magic | eassumption | magic .. ]
       | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
+    eqtype (ctxextend G (Subst A sbs)) (Subst (Subst A sbs) sbweak)
+    (Subst (Subst A sbweak) (sbshift sbs))
+  ).
+  { eapply EqTySym ; [
+      eapply EqTyWeakNat ; magic
+    | magic ..
+    ].
+  }
+  assert (
+    isterm (ctxextend G (Subst A sbs)) (subst (subst u sbweak) (sbshift sbs))
+    (Subst (Subst A sbs) sbweak)
+  ).
+  { eapply TermTyConv ; magic. }
+  assert (
     eqterm (ctxextend G (Subst A sbs))
-    (subst (subst u (sbweak D A)) (sbshift G A sbs))
-    (subst (subst u sbs) (sbweak G (Subst A sbs)))
-    (Subst (Subst A (sbweak D A)) (sbshift G A sbs))
+    (subst (subst u sbweak) (sbshift sbs))
+    (subst (subst u sbs) sbweak)
+    (Subst (Subst A sbweak) (sbshift sbs))
   ).
   { eapply EqTyConv ; [
       eapply EqSubstWeakNat ; try magic ; eassumption
     | try magic ; try eassumption ..
     ].
-    Unshelve. magic.
+    Unshelve. assumption.
   }
   assert (
     eqtype (ctxextend G (Subst A sbs))
-           (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-           (Subst (Subst A (sbweak D A)) (sbshift G A sbs))
+           (Subst (Subst A sbs) sbweak)
+           (Subst (Subst A sbweak) (sbshift sbs))
   ).
-  { apply myEqTySym ; try magic. assumption. }
+  { apply EqTySym ; magic. }
   assert (
     isterm (ctxextend G (Subst A sbs))
-           (subst (var 0) (sbshift G A sbs))
-           (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
+           (subst (var 0) (sbshift sbs))
+           (Subst (Subst A sbs) sbweak)
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [
@@ -983,23 +692,21 @@ Proof.
       | eapply TermVarZero ; magic
       | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
-  assert (eqterm (ctxextend G (Subst A sbs)) (subst (var 0) (sbshift G A sbs))
-    (var 0) (Subst (Subst A (sbweak D A)) (sbshift G A sbs))).
+  assert (eqterm (ctxextend G (Subst A sbs)) (subst (var 0) (sbshift sbs))
+    (var 0) (Subst (Subst A sbweak) (sbshift sbs))).
   { eapply EqTyConv ; [
       eapply EqSubstShiftZero ; magic
-    | try magic ..
+    | magic ..
     ].
-    assumption.
     Unshelve. assumption.
   }
   assert (
     isterm (ctxextend G (Subst A sbs))
-    (subst (subst u sbs) (sbweak G (Subst A sbs)))
-    (Subst (Subst A (sbweak D A)) (sbshift G A sbs))
+    (subst (subst u sbs) sbweak)
+    (Subst (Subst A sbweak) (sbshift sbs))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [
@@ -1007,65 +714,75 @@ Proof.
       | eapply TermSubst ; [ magic | eassumption | magic .. ]
       | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     isterm (ctxextend G (Subst A sbs)) (var 0)
-    (Subst (Subst A (sbweak D A)) (sbshift G A sbs))
+    (Subst (Subst A sbweak) (sbshift sbs))
   ).
   { eapply TermTyConv ; [
       eapply TermVarZero ; magic
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqtype (ctxextend G (Subst A sbs))
-    (Id (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-       (subst (subst u sbs) (sbweak G (Subst A sbs))) (var 0))
-    (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-       (sbshift G A sbs))
+    (Id (Subst (Subst A sbs) sbweak)
+       (subst (subst u sbs) sbweak) (var 0))
+    (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+       (sbshift sbs))
   ).
-  { gopushsubst. apply CongId ; try magic ; try assumption. }
+  { gopushsubst. }
   assert (
     eqctx
     (ctxextend (ctxextend G (Subst A sbs))
-       (Id (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-          (subst (subst u sbs) (sbweak G (Subst A sbs)))
+       (Id (Subst (Subst A sbs) sbweak)
+          (subst (subst u sbs) sbweak)
           (var 0)))
     (ctxextend (ctxextend G (Subst A sbs))
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbshift G A sbs)))
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbshift sbs)))
   ).
   { magic.
     Unshelve. assumption.
   }
   assert (
+    isterm (ctxextend D (Subst (Subst A sbweak) (sbzero v)))
+    (var 0) (Subst A sbweak)
+  ).
+  { eapply TermTyConv ; magic. Unshelve. all:strictmagic. }
+  assert (
     issubst
-      (sbshift D
-               (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-               (sbzero D A v))
+      (sbshift (sbzero v))
       (ctxextend D (Id A u v))
       (ctxextend
          (ctxextend D A)
-         (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0)))
+         (Id (Subst A sbweak) (subst u sbweak) (var 0)))
   ).
-  { eapply SubstCtxConv ; magic. }
+  { eapply SubstCtxConv ; try magic ; try eassumption.
+    Unshelve. all:strictmagic.
+  }
   assert (istype D (Id A u v)).
   { magic. }
   assert (isctx (ctxextend G (Subst (Id A u v) sbs))).
   { magic. }
   assert (
-    issubst (sbshift G (Id A u v) sbs) (ctxextend G (Subst (Id A u v) sbs))
+    issubst (sbshift sbs) (ctxextend G (Subst (Id A u v) sbs))
     (ctxextend D
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbzero D A v)))
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbzero v)))
   ).
-  { eapply SubstCtxConv ; magic. }
+  { eapply SubstCtxConv ; magic.
+    Unshelve. all:try magic.
+    Unshelve. all:try strictmagic.
+    all:(eapply TermTyConv ; try strictmagic).
+    all:(eapply EqTySym ; try strictmagic).
+    all:(simplify ; try strictmagic).
+    all:assumption.
+  }
   assert (
-    eqsubst (sbcomp (sbweak D A) (sbcomp (sbzero D A v) sbs)) sbs G D
+    eqsubst (sbcomp sbweak (sbcomp (sbzero v) sbs)) sbs G D
   ).
   { eapply SubstTrans ; [
       eapply CompAssoc ; magic
@@ -1082,24 +799,24 @@ Proof.
     Unshelve. all:assumption.
   }
   assert (
-    eqtype G (Subst A (sbcomp (sbweak D A) (sbcomp (sbzero D A v) sbs)))
-    (Subst (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) (sbweak D A))
-       (sbcomp (sbzero D A v) sbs))
+    eqtype G (Subst A (sbcomp sbweak (sbcomp (sbzero v) sbs)))
+    (Subst (Subst (Subst (Subst A sbweak) (sbzero v)) sbweak)
+       (sbcomp (sbzero v) sbs))
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { gocompsubst. Unshelve. all:assumption. }
   assert (
     eqtype G
-    (Subst (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) (sbweak D A))
-       (sbcomp (sbzero D A v) sbs))
-    (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v))
-       (sbcomp (sbweak D A) (sbcomp (sbzero D A v) sbs)))
+    (Subst (Subst (Subst (Subst A sbweak) (sbzero v)) sbweak)
+       (sbcomp (sbzero v) sbs))
+    (Subst (Subst (Subst A sbweak) (sbzero v))
+       (sbcomp sbweak (sbcomp (sbzero v) sbs)))
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { gocompsubst. Unshelve. all:assumption. }
   assert (
     isterm G
-           (subst (subst u (sbweak D A)) (sbcomp (sbzero D A v) sbs))
-           (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v))
-                  (sbcomp (sbweak D A) (sbcomp (sbzero D A v) sbs)))
+           (subst (subst u sbweak) (sbcomp (sbzero v) sbs))
+           (Subst (Subst (Subst A sbweak) (sbzero v))
+                  (sbcomp sbweak (sbcomp (sbzero v) sbs)))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [
@@ -1107,68 +824,71 @@ Proof.
       | eapply TermSubst ; [ magic | eassumption | magic .. ]
       | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     isterm G (subst u sbs)
-    (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v))
-       (sbcomp (sbweak D A) (sbcomp (sbzero D A v) sbs)))
+    (Subst (Subst (Subst A sbweak) (sbzero v))
+       (sbcomp sbweak (sbcomp (sbzero v) sbs)))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [ magic | eassumption | magic .. ]
     | magic ..
     ].
-    Unshelve. assumption.
+    Unshelve. all:assumption.
   }
   assert (
-    eqtype G (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) sbs)
-    (Subst (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) (sbweak D A))
-       (sbcomp (sbzero D A v) sbs))
+    eqtype G (Subst (Subst (Subst A sbweak) (sbzero v)) sbs)
+    (Subst (Subst (Subst (Subst A sbweak) (sbzero v)) sbweak)
+       (sbcomp (sbzero v) sbs))
   ).
-  { gocompsubst. Unshelve. magic. }
+  { gocompsubst. }
   assert (
     isterm G (subst u sbs)
-    (Subst (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) (sbweak D A))
-       (sbcomp (sbzero D A v) sbs))
+    (Subst (Subst (Subst (Subst A sbweak) (sbzero v)) sbweak)
+       (sbcomp (sbzero v) sbs))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [ magic | eassumption | magic .. ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqtype G
-    (Subst (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) (sbweak D A))
-       (sbcomp (sbzero D A v) sbs)) (Subst A sbs)
+    (Subst (Subst (Subst (Subst A sbweak) (sbzero v)) sbweak)
+       (sbcomp (sbzero v) sbs)) (Subst A sbs)
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { gocompsubst. Unshelve. all:assumption. }
+  assert (
+    eqtype G (Subst (Subst A sbweak) (sbcomp (sbzero v) sbs)) (Subst A sbs)
+  ).
+  { gocompsubst. Unshelve. all:assumption. }
+  assert (
+    eqtype G (Subst (Subst A sbweak) (sbcomp (sbzero v) sbs))
+    (Subst A (sbcomp sbweak (sbcomp (sbzero v) sbs)))
+  ).
+  { gocompsubst. Unshelve. all:assumption. }
+  assert (
+    eqtype G (Subst A sbs) (Subst (Subst A sbweak) (sbcomp (sbzero v) sbs))
+  ).
+  { gocompsubst. Unshelve. all:assumption. }
   assert (
     eqterm G (subst u sbs)
-    (subst (subst u (sbweak D A)) (sbcomp (sbzero D A v) sbs))
+    (subst (subst u sbweak) (sbcomp (sbzero v) sbs))
     (Subst A sbs)
   ).
-  { (* gocompsubst ; try eassumption ; try magic. *)
-
-    eapply EqTyConv ; [
-      eapply myEqSym ; [
-        eapply eqterm_subst_left ; try magic ; try eassumption ; magic
-      | magic ..
-      ]
-    | try magic ..
-    ].
-    assumption.
-    Unshelve. all:magic.
+  { gocompsubst ; try eassumption ; try magic
+    ; eapply TermTyConv ; magic.
+    Unshelve. all:assumption.
   }
   assert (
-     eqtype G (Subst (Subst A (sbweak D A)) (sbcomp (sbzero D A v) sbs))
+     eqtype G (Subst (Subst A sbweak) (sbcomp (sbzero v) sbs))
     (Subst A sbs)
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { gocompsubst. Unshelve. all:assumption. }
   assert (
-    isterm G (subst (var 0) (sbcomp (sbzero D A v) sbs)) (Subst A sbs)
+    isterm G (subst (var 0) (sbcomp (sbzero v) sbs)) (Subst A sbs)
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [
@@ -1176,50 +896,34 @@ Proof.
       | eapply TermVarZero ; magic
       | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqtype G (Subst A sbs)
-    (Subst (Subst A (sbweak D A)) (sbcomp (sbzero D A v) sbs))
+    (Subst (Subst A sbweak) (sbcomp (sbzero v) sbs))
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { gocompsubst. Unshelve. all:assumption. }
   assert (
-    isterm G (subst (subst (var 0) (sbzero D A v)) sbs)
-    (Subst (Subst A (sbweak D A)) (sbcomp (sbzero D A v) sbs))
+    isterm G (subst (subst (var 0) (sbzero v)) sbs)
+    (Subst (Subst A sbweak) (sbcomp (sbzero v) sbs))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [ eassumption | eassumption | magic .. ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqterm G
            (subst v sbs)
-           (subst (var 0) (sbcomp (sbzero D A v) sbs))
+           (subst (var 0) (sbcomp (sbzero v) sbs))
            (Subst A sbs)
   ).
-  { eapply myEqSym ; try magic.
-    eapply EqTrans ; [
-      eapply EqTyConv ; [
-        eapply myEqSym ; [
-          eapply EqSubstComp ; [
-            shelve
-          | eassumption
-          | magic ..
-          ]
-        | magic ..
-        ]
-      | try magic ; assumption ..
-      ]
-    | magic ..
-    ].
-    Unshelve. all:magic.
+  { eapply EqSym ; magic.
+    Unshelve. assumption.
   }
   assert (
-     isterm G (subst (subst u (sbweak D A)) (sbcomp (sbzero D A v) sbs))
+     isterm G (subst (subst u sbweak) (sbcomp (sbzero v) sbs))
     (Subst A sbs)
   ).
   { eapply TermTyConv ; [
@@ -1228,28 +932,27 @@ Proof.
       | eapply TermSubst ; [ magic | eassumption | magic .. ]
       | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqtype G
-    (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-       (sbcomp (sbzero D A v) sbs)) (Subst (Id A u v) sbs)
+    (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+       (sbcomp (sbzero v) sbs)) (Subst (Id A u v) sbs)
   ).
-  { gopushsubst. gopushsubst. eapply CongId ; try magic ; try assumption. }
+  { magic. }
   assert (
     eqctx
     (ctxextend G
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbcomp (sbzero D A v) sbs))) (ctxextend G (Subst (Id A u v) sbs))
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbcomp (sbzero v) sbs))) (ctxextend G (Subst (Id A u v) sbs))
   ).
-  { eapply EqCtxExtend ; try magic. assumption. }
+  { magic. }
   assert (
     eqsubst
     (sbcomp
-       (sbweak D A)
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+       sbweak
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
     sbs
     G D
   ).
@@ -1265,76 +968,81 @@ Proof.
   }
   assert (
     eqtype G
-    (Subst (Subst A (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (Subst (Subst A sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
     (Subst A sbs)
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { magic. Unshelve. all:strictmagic. }
   assert (
     eqtype G
-    (Subst (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (Subst (Subst (Subst (Subst A sbweak) (sbzero v)) sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
     (Subst A
-       (sbcomp (sbweak D A)
-          (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs)))))
+       (sbcomp sbweak
+          (sbcomp (sbshift sbs) (sbzero (subst v sbs)))))
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { magic. Unshelve. all:strictmagic. }
+  assert (
+    eqtype
+      G
+      (Subst (Subst A sbweak) (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
+      (Subst A (sbcomp sbweak (sbcomp (sbshift sbs) (sbzero (subst v sbs)))))
+  ).
+  { magic. Unshelve. all:strictmagic. }
   assert (
     isterm G
-    (subst (subst u (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (subst (subst u sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
     (Subst A
-       (sbcomp (sbweak D A)
-          (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs)))))
+       (sbcomp sbweak
+          (sbcomp (sbshift sbs) (sbzero (subst v sbs)))))
   ).
   { eapply TermTyConv ; [
       (eapply TermSubst ; try magic) ;
       (eapply TermSubst ; try magic) ;
       eassumption
-    | try magic ..
+    | magic ..
     ].
-    assumption.
-    Unshelve. all:magic.
   }
   assert (
     isterm G (subst u sbs)
     (Subst A
-       (sbcomp (sbweak D A)
-          (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs)))))
+       (sbcomp sbweak
+          (sbcomp (sbshift sbs) (sbzero (subst v sbs)))))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [ magic | eassumption | magic .. ]
     | magic ..
     ].
-    Unshelve. assumption.
+    Unshelve. all:strictmagic.
   }
   assert (
     eqterm G
-    (subst (subst u (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (subst (subst u sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
     (subst u sbs)
-    (Subst (Subst A (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (Subst (Subst A sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { magic. Unshelve. all:strictmagic. }
   assert (
-    isterm (ctxextend D A) (var 0) (Subst A (sbweak D A))
+    isterm (ctxextend D A) (var 0) (Subst A sbweak)
   ).
   { magic. }
   assert (
     eqtype G
-    (Subst (Subst (Subst A (sbweak D A)) (sbshift G A sbs))
-       (sbzero G (Subst A sbs) (subst v sbs)))
-    (Subst (Subst A (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (Subst (Subst (Subst A sbweak) (sbshift sbs))
+       (sbzero (subst v sbs)))
+    (Subst (Subst A sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { magic. Unshelve. all:assumption. }
   assert (
     isterm G
-    (subst (subst (var 0) (sbshift G A sbs))
-       (sbzero G (Subst A sbs) (subst v sbs)))
-    (Subst (Subst A (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (subst (subst (var 0) (sbshift sbs))
+       (sbzero (subst v sbs)))
+    (Subst (Subst A sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [
@@ -1346,20 +1054,19 @@ Proof.
         ]
        | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
-    eqtype G (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) sbs)
-    (Subst (Subst A (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    eqtype G (Subst (Subst (Subst A sbweak) (sbzero v)) sbs)
+    (Subst (Subst A sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { magic. Unshelve. all:assumption. }
   assert (
     isterm G (subst v sbs)
-   (Subst (Subst A (sbweak D A))
-      (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+   (Subst (Subst A sbweak)
+      (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [
@@ -1367,18 +1074,17 @@ Proof.
       | eassumption
       | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqsubst
-      (sbcomp (sbweak D A)
-              (sbcomp (sbshift G A sbs)
-                      (sbzero G (Subst A sbs) (subst v sbs))))
+      (sbcomp sbweak
+              (sbcomp (sbshift sbs)
+                      (sbzero (subst v sbs))))
       (sbcomp sbs
-              (sbcomp (sbweak G (Subst A sbs))
-                      (sbzero G (Subst A sbs) (subst v sbs))))
+              (sbcomp sbweak
+                      (sbzero (subst v sbs))))
       G
       D
   ).
@@ -1394,27 +1100,25 @@ Proof.
       ]
     | try magic ..
     ].
-    eapply mySubstSym ; try magic.
+    eapply SubstSym ; try magic.
     eapply SubstTrans ; [
       eapply CompAssoc ; magic
     | magic ..
     ].
-    Unshelve. magic.
+    Unshelve. all:strictmagic.
   }
   assert (
      eqtype G
-    (Subst (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-       (sbzero G (Subst A sbs) (subst v sbs)))
-    (Subst (Subst A (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (Subst (Subst (Subst A sbs) sbweak)
+       (sbzero (subst v sbs)))
+    (Subst (Subst A sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
   ).
-  { gocompsubst. gocompsubst. gocompsubst.
-    Unshelve. assumption.
-  }
+  { magic. Unshelve. all:strictmagic. }
   assert (
-    isterm G (subst (var 0) (sbzero G (Subst A sbs) (subst v sbs)))
-   (Subst (Subst A (sbweak D A))
-      (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    isterm G (subst (var 0) (sbzero (subst v sbs)))
+   (Subst (Subst A sbweak)
+      (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [
@@ -1422,77 +1126,57 @@ Proof.
       | eapply TermVarZero ; magic
       | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqtype G (Subst A sbs)
-    (Subst (Subst A (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (Subst (Subst A sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { magic. Unshelve. all:assumption. }
   assert (
     eqterm G
     (subst (var 0)
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
     (subst v sbs)
-    (Subst (Subst A (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (Subst (Subst A sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
   ).
   { eapply EqTrans ; [
-      eapply myEqSym ; [
+      eapply EqSym ; [
         eapply EqSubstComp ; [ shelve | magic .. ]
       | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    eapply EqTrans ; [
-      eapply EqTyConv ; [
-        eapply CongTermSubst ; [
-          eapply SubstRefl ; magic
-        | eapply EqSubstShiftZero ; magic
-        | magic ..
-        ]
-      | try magic ; assumption ..
-      ]
-    | try magic ..
-    ].
-    eapply EqTyConv ; [
-      eapply EqSubstZeroZero ; magic
-    | try magic ..
-    ].
-    assumption.
-    Unshelve. all:magic.
+    Unshelve. all:try strictmagic.
   }
   assert (
     isterm G (subst u sbs)
-    (Subst (Subst A (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (Subst (Subst A sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [ magic | eassumption | magic .. ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqtype G
-    (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
     (Subst (Id A u v) sbs)
   ).
-  { gopushsubst. gopushsubst. apply myEqTySym ; try magic.
-    eapply CongId ; try magic ; assumption.
-  }
+  { magic. Unshelve. all:strictmagic. }
   assert (
     eqctx
     (ctxextend G
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs)))))
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbcomp (sbshift sbs) (sbzero (subst v sbs)))))
     (ctxextend G (Subst (Id A u v) sbs))
   ).
-  { apply EqCtxExtend ; try magic. assumption. }
+  { magic. }
   assert (istype G (Id (Subst A sbs) (subst u sbs) (subst v sbs))).
   { magic. }
   assert (
@@ -1517,15 +1201,15 @@ Proof.
   assert (
     eqtype G
     (Subst
-       (Subst (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) (sbweak D A))
-          (sbshift G A sbs)) (sbzero G (Subst A sbs) (subst v sbs)))
+       (Subst (Subst (Subst (Subst A sbweak) (sbzero v)) sbweak)
+          (sbshift sbs)) (sbzero (subst v sbs)))
     (Subst A sbs)
   ).
-  { gocompsubst. gocompsubst. Unshelve. assumption. }
+  { gocompsubst. Unshelve. all:assumption. }
   assert (
     isterm G
-    (subst (subst (subst u (sbweak D A)) (sbshift G A sbs))
-       (sbzero G (Subst A sbs) (subst v sbs))) (Subst A sbs)
+    (subst (subst (subst u sbweak) (sbshift sbs))
+       (sbzero (subst v sbs))) (Subst A sbs)
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [
@@ -1537,20 +1221,19 @@ Proof.
         ]
       | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqtype G
-    (Subst (Subst (Subst A (sbweak D A)) (sbshift G A sbs))
-       (sbzero G (Subst A sbs) (subst v sbs))) (Subst A sbs)
+    (Subst (Subst (Subst A sbweak) (sbshift sbs))
+       (sbzero (subst v sbs))) (Subst A sbs)
   ).
-  { gocompsubst. gocompsubst. Unshelve. assumption. }
+  { magic. }
   assert (
     isterm G
-    (subst (subst (var 0) (sbshift G A sbs))
-       (sbzero G (Subst A sbs) (subst v sbs))) (Subst A sbs)
+    (subst (subst (var 0) (sbshift sbs))
+       (sbzero (subst v sbs))) (Subst A sbs)
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [
@@ -1558,31 +1241,30 @@ Proof.
       | eapply TermSubst ; [ magic | eassumption | magic .. ]
       | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqtype G (Subst A sbs)
-    (Subst (Subst (Subst A (sbweak D A)) (sbshift G A sbs))
-       (sbzero G (Subst A sbs) (subst v sbs)))
+    (Subst (Subst (Subst A sbweak) (sbshift sbs))
+       (sbzero (subst v sbs)))
   ).
-  { gocompsubst. gocompsubst. Unshelve. assumption. }
+  { magic. }
   assert (
     eqtype G
     (Subst
-       (Subst (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) (sbweak D A))
-          (sbshift G A sbs)) (sbzero G (Subst A sbs) (subst v sbs)))
-    (Subst (Subst A (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+       (Subst (Subst (Subst (Subst A sbweak) (sbzero v)) sbweak)
+          (sbshift sbs)) (sbzero (subst v sbs)))
+    (Subst (Subst A sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { magic. Unshelve. all:assumption. }
   assert (
     isterm G
-    (subst (subst (subst u (sbweak D A)) (sbshift G A sbs))
-       (sbzero G (Subst A sbs) (subst v sbs)))
-    (Subst (Subst A (sbweak D A))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (subst (subst (subst u sbweak) (sbshift sbs))
+       (sbzero (subst v sbs)))
+    (Subst (Subst A sbweak)
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [
@@ -1594,301 +1276,312 @@ Proof.
         ]
       | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqsubst
-    (sbcomp (sbweak D A)
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
-    (sbcomp (sbweak D A) (sbcomp (sbzero D A v) sbs)) G D
+    (sbcomp sbweak
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
+    (sbcomp sbweak (sbcomp (sbzero v) sbs)) G D
   ).
-  { eapply CongSubstComp ; magic. }
+  { eapply CongSubstComp ; magic. Unshelve. all:assumption. }
   assert (
-    eqtype G (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) sbs)
-    (Subst (Subst (Subst A (sbweak D A)) (sbshift G A sbs))
-       (sbzero G (Subst A sbs) (subst v sbs)))
+    eqtype G (Subst (Subst (Subst A sbweak) (sbzero v)) sbs)
+    (Subst (Subst (Subst A sbweak) (sbshift sbs))
+       (sbzero (subst v sbs)))
   ).
-  { gocompsubst. gocompsubst. gocompsubst. gocompsubst.
-    Unshelve. assumption.
-  }
+  { gocompsubst. Unshelve. all:assumption. }
   assert (
     isterm G (subst u sbs)
-    (Subst (Subst (Subst A (sbweak D A)) (sbshift G A sbs))
-       (sbzero G (Subst A sbs) (subst v sbs)))
+    (Subst (Subst (Subst A sbweak) (sbshift sbs))
+       (sbzero (subst v sbs)))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [ magic | eassumption | magic .. ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqterm G (subst u sbs)
-    (subst (subst (subst u (sbweak D A)) (sbshift G A sbs))
-       (sbzero G (Subst A sbs) (subst v sbs))) (Subst A sbs)
+    (subst (subst (subst u sbweak) (sbshift sbs))
+       (sbzero (subst v sbs))) (Subst A sbs)
   ).
-  { gocompsubst ; try eassumption ; magic.
-    Unshelve. all:magic.
-  }
+  { gocompsubst ; try eassumption ; magic. }
   assert (
     isterm G (subst v sbs)
-    (Subst (Subst (Subst A (sbweak D A)) (sbshift G A sbs))
-       (sbzero G (Subst A sbs) (subst v sbs)))
+    (Subst (Subst (Subst A sbweak) (sbshift sbs))
+       (sbzero (subst v sbs)))
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [ magic | eassumption | magic .. ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqterm G (subst v sbs)
-    (subst (subst (var 0) (sbshift G A sbs))
-       (sbzero G (Subst A sbs) (subst v sbs))) (Subst A sbs)
+    (subst (subst (var 0) (sbshift sbs))
+       (sbzero (subst v sbs))) (Subst A sbs)
   ).
-  { eapply myEqSym ; try magic.
-    gocompsubst ; assumption.
-  }
+  { eapply EqSym ; try magic. }
   assert (
     eqtype G
     (Subst
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbshift G A sbs)) (sbzero G (Subst A sbs) (subst v sbs)))
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbshift sbs)) (sbzero (subst v sbs)))
     (Subst (Id A u v) sbs)
   ).
-  { gopushsubst. gopushsubst. gopushsubst.
-    apply CongId ; try magic ; assumption.
-    Unshelve. assumption.
-  }
+  { magic. }
   assert (
     eqctx
     (ctxextend G
        (Subst
-          (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-             (sbshift G A sbs)) (sbzero G (Subst A sbs) (subst v sbs))))
+          (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+             (sbshift sbs)) (sbzero (subst v sbs))))
     (ctxextend G (Subst (Id A u v) sbs))
   ).
-  { apply EqCtxExtend ; try magic. assumption. }
+  { magic. }
   assert (
     isctx
     (ctxextend (ctxextend G (Subst A sbs))
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbshift G A sbs)))
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbshift sbs)))
   ).
-  { apply CtxExtend.
-    - assumption.
-    - magic.
-  }
+  { magic. }
+  assert (
+    eqctx
+      (ctxextend
+         G
+         (Subst
+            (Id (Subst (Subst A sbweak) (sbshift sbs))
+                (subst (subst u sbweak) (sbshift sbs))
+                (subst (var 0) (sbshift sbs)))
+            (sbzero (subst v sbs)))) (ctxextend G (Subst (Id A u v) sbs))
+  ).
+  { magic. }
   assert (
     istype G
    (Subst
       (Subst
          (Subst C
-            (sbshift (ctxextend G (Subst A sbs))
-               (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-               (sbshift G A sbs)))
-         (sbshift G
-            (Id (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-               (subst (subst u sbs) (sbweak G (Subst A sbs)))
-               (var 0)) (sbzero G (Subst A sbs) (subst v sbs))))
-      (sbzero G (Id (Subst A sbs) (subst u sbs) (subst v sbs)) (subst p sbs)))
+            (sbshift
+               (sbshift sbs)))
+         (sbshift (sbzero (subst v sbs))))
+      (sbzero (subst p sbs)))
   ).
   { eapply TySubst ; try magic.
     eapply TySubst ; try magic.
-    eapply SubstCtxConv ; magic.
-    Unshelve. assumption.
+    eapply SubstCtxConv ; [
+      eapply SubstShift ; magic
+    | try magic ..
+    ].
+    eassumption.
+    Unshelve. all:strictmagic.
   }
   assert (
+    eqtype G
+    (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbshift sbs))
+       (sbzero (subst v sbs))) (Id (Subst A sbs) (subst u sbs) (subst v sbs))
+  ).
+  { magic. }
+  assert (
+    eqctx
+    (ctxextend G
+       (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbshift sbs))
+          (sbzero (subst v sbs))))
+    (ctxextend G (Id (Subst A sbs) (subst u sbs) (subst v sbs)))
+  ).
+  { magic. }
+  assert (
     issubst
-    (sbshift G
-       (Id (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-          (subst (subst u sbs) (sbweak G (Subst A sbs)))
-          (var 0)) (sbzero G (Subst A sbs) (subst v sbs)))
+    (sbshift (sbzero (subst v sbs)))
     (ctxextend G (Id (Subst A sbs) (subst u sbs) (subst v sbs)))
     (ctxextend (ctxextend G (Subst A sbs))
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbshift G A sbs)))
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbshift sbs)))
   ).
-  { eapply SubstCtxConv ; magic.
-    Unshelve. assumption.
+  { assert (issubst (sbcomp sbweak (sbshift sbs)) (ctxextend G (Subst A sbs)) D)
+      by magic.
+    eapply SubstCtxConv ; [
+      eapply SubstShift ; magic
+    | try magic ..
+    ].
+
+    Unshelve.
+    all:try strictmagic.
+    all:try magic.
+    Unshelve. all:try strictmagic.
   }
   assert (
     issubst
-    (sbshift G
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbzero D A v)) sbs) (ctxextend G (Subst (Id A u v) sbs))
+    (sbshift sbs) (ctxextend G (Subst (Id A u v) sbs))
     (ctxextend D (Id A u v))
   ).
   { eapply SubstCtxConv ; magic.
-    Unshelve. assumption.
+    Unshelve. all:try strictmagic.
+    all:magic.
+    Unshelve. all:strictmagic.
   }
   assert (
     eqtype G
     (Subst
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbzero D A v)) sbs)
-    (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-       (sbcomp (sbzero D A v) sbs))
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbzero v)) sbs)
+    (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+       (sbcomp (sbzero v) sbs))
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { magic. Unshelve. all:strictmagic. }
   assert (
     eqctx
     (ctxextend G
        (Subst
-          (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-             (sbzero D A v)) sbs))
+          (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+             (sbzero v)) sbs))
     (ctxextend G
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbcomp (sbzero D A v) sbs)))
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbcomp (sbzero v) sbs)))
   ).
-  { eapply EqCtxExtend ; try magic. assumption. }
+  { eapply EqCtxExtend ; magic. }
   assert (
     issubst
    (sbcomp
-      (sbshift D (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-         (sbzero D A v))
-      (sbshift G
-         (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-            (sbzero D A v)) sbs))
+      (sbshift
+         (sbzero v))
+      (sbshift sbs))
    (ctxextend G
-      (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-         (sbcomp (sbzero D A v) sbs)))
+      (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+         (sbcomp (sbzero v) sbs)))
    (ctxextend (ctxextend D A)
-      (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0)))
+      (Id (Subst A sbweak) (subst u sbweak) (var 0)))
   ).
-  { eapply SubstCtxConv ; try magic. assumption. }
+  { eapply SubstCtxConv ; magic. Unshelve. all:try strictmagic. all:magic.
+    Unshelve. all:strictmagic.
+  }
   assert (
     issubst
-    (sbshift G (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-       (sbcomp (sbzero D A v) sbs)) (ctxextend G (Subst (Id A u v) sbs))
+    (sbshift
+       (sbcomp (sbzero v) sbs)) (ctxextend G (Subst (Id A u v) sbs))
     (ctxextend (ctxextend D A)
-       (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0)))
+       (Id (Subst A sbweak) (subst u sbweak) (var 0)))
   ).
-  { eapply SubstCtxConv ; try magic. assumption. }
+  { eapply SubstCtxConv ; magic. Unshelve. all:try strictmagic.
+    all:magic. Unshelve. all:strictmagic.
+  }
   assert (
     issubst
-    (sbshift G (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (sbshift
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
     (ctxextend G
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbcomp (sbzero D A v) sbs)))
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbcomp (sbzero v) sbs)))
     (ctxextend (ctxextend D A)
-       (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0)))
+       (Id (Subst A sbweak) (subst u sbweak) (var 0)))
   ).
-  { eapply SubstCtxConv ; magic. }
+  { magic. Unshelve. all:try strictmagic. all:magic.
+    Unshelve. all:strictmagic.
+  }
   assert (
     issubst
-    (sbshift G (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+    (sbshift
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
     (ctxextend G (Subst (Id A u v) sbs))
     (ctxextend (ctxextend D A)
-       (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0)))
+       (Id (Subst A sbweak) (subst u sbweak) (var 0)))
   ).
-  { eapply SubstCtxConv ; try magic. assumption. }
+  { magic. Unshelve. all:strictmagic. }
   assert (
     eqtype G
     (Subst
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbshift G A sbs)) (sbzero G (Subst A sbs) (subst v sbs)))
-    (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-       (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs))))
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbshift sbs)) (sbzero (subst v sbs)))
+    (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
   ).
-  { gocompsubst. Unshelve. assumption. }
+  { magic. Unshelve. all:strictmagic. }
   assert (
     eqctx
     (ctxextend G
        (Subst
-          (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-             (sbshift G A sbs)) (sbzero G (Subst A sbs) (subst v sbs))))
+          (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+             (sbshift sbs)) (sbzero (subst v sbs))))
     (ctxextend G
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs)))))
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbcomp (sbshift sbs) (sbzero (subst v sbs)))))
   ).
-  { eapply EqCtxExtend ; try magic. assumption. }
+  { magic. }
   assert (
     issubst
    (sbcomp
-      (sbshift (ctxextend G (Subst A sbs))
-         (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-         (sbshift G A sbs))
-      (sbshift G
-         (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-            (sbshift G A sbs)) (sbzero G (Subst A sbs) (subst v sbs))))
+      (sbshift
+         (sbshift sbs))
+      (sbshift (sbzero (subst v sbs))))
    (ctxextend G
-      (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-         (sbcomp (sbshift G A sbs) (sbzero G (Subst A sbs) (subst v sbs)))))
+      (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+         (sbcomp (sbshift sbs) (sbzero (subst v sbs)))))
    (ctxextend (ctxextend D A)
-      (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0)))
+      (Id (Subst A sbweak) (subst u sbweak) (var 0)))
   ).
-  { eapply SubstCtxConv ; try magic. assumption. }
+  { eapply SubstCtxConv ; try magic. Unshelve. all:try strictmagic.
+    all:magic. Unshelve. all:strictmagic.
+  }
   assert (
     issubst
     (sbcomp
-       (sbshift (ctxextend G (Subst A sbs))
-          (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbshift G A sbs))
-       (sbshift G
-          (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-             (sbshift G A sbs)) (sbzero G (Subst A sbs) (subst v sbs))))
+       (sbshift
+          (sbshift sbs))
+       (sbshift (sbzero (subst v sbs))))
     (ctxextend G (Subst (Id A u v) sbs))
     (ctxextend (ctxextend D A)
-       (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0)))
+       (Id (Subst A sbweak) (subst u sbweak) (var 0)))
   ).
-  { eapply SubstCtxConv ; try magic. assumption. }
+  { magic. Unshelve. all:try strictmagic. all:try magic.
+    Unshelve. all:try strictmagic. all:magic.
+    Unshelve. all:strictmagic.
+  }
   assert (
     issubst
-    (sbshift G
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbshift G A sbs)) (sbzero G (Subst A sbs) (subst v sbs)))
+    (sbshift (sbzero (subst v sbs)))
     (ctxextend G (Subst (Id A u v) sbs))
     (ctxextend (ctxextend G (Subst A sbs))
-       (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-          (sbshift G A sbs)))
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbshift sbs)))
   ).
-  { eapply SubstCtxConv ; try magic. assumption.
-    Unshelve. all:assumption.
+  { magic. Unshelve. all:try strictmagic. all:magic.
+    Unshelve. all:strictmagic.
   }
   assert (
     issubst
-   (sbshift G
-      (Id (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-         (subst (subst u sbs) (sbweak G (Subst A sbs)))
-         (var 0)) (sbzero G (Subst A sbs) (subst v sbs)))
+   (sbshift (sbzero (subst v sbs)))
    (ctxextend G
       (Subst
-         (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-            (sbshift G A sbs)) (sbzero G (Subst A sbs) (subst v sbs))))
+         (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+            (sbshift sbs)) (sbzero (subst v sbs))))
    (ctxextend (ctxextend G (Subst A sbs))
-      (Subst (Id (Subst A (sbweak D A)) (subst u (sbweak D A)) (var 0))
-         (sbshift G A sbs)))
+      (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+         (sbshift sbs)))
   ).
-  { eapply SubstCtxConv ; magic.
-    Unshelve. all:assumption.
-  }
+  { magic. }
   assert (
     issubst
-      (sbzero G
-              (Id (Subst A sbs) (subst u sbs) (subst v sbs))
+      (sbzero
               (subst p sbs)
       )
       G
       (ctxextend G (Subst (Id A u v) sbs))
   ).
-  { eapply SubstCtxConv ; magic. }
+  { magic. }
   assert (
     eqtype G
     (Subst
-       (Subst (Subst (Subst (Subst A (sbweak D A)) (sbzero D A v)) sbs)
-          (sbweak G (Subst A sbs))) (sbzero G (Subst A sbs) (subst v sbs)))
+       (Subst (Subst (Subst (Subst A sbweak) (sbzero v)) sbs)
+          sbweak) (sbzero (subst v sbs)))
     (Subst A sbs)
   ).
-  { gocompsubst. gocompsubst. Unshelve. assumption. }
+  { magic. Unshelve. all:strictmagic. }
   assert (
     isterm G
-    (subst (subst (subst u sbs) (sbweak G (Subst A sbs)))
-       (sbzero G (Subst A sbs) (subst v sbs))) (Subst A sbs)
+    (subst (subst (subst u sbs) sbweak)
+       (sbzero (subst v sbs))) (Subst A sbs)
   ).
   { eapply TermTyConv ; [
       eapply TermSubst ; [
@@ -1900,30 +1593,116 @@ Proof.
         ]
       | magic ..
       ]
-    | try magic ..
+    | magic ..
     ].
-    assumption.
   }
   assert (
     eqtype G (Subst A sbs)
-   (Subst (Subst (Subst A sbs) (sbweak G (Subst A sbs)))
-      (sbzero G (Subst A sbs) (subst v sbs)))
+   (Subst (Subst (Subst A sbs) sbweak)
+      (sbzero (subst v sbs)))
   ).
-  { gocompsubst. gocompsubst. Unshelve. assumption. }
+  { magic. Unshelve. all:strictmagic. }
   assert (
      eqterm G (subst u sbs)
-   (subst (subst (subst u sbs) (sbweak G (Subst A sbs)))
-      (sbzero G (Subst A sbs) (subst v sbs))) (Subst A sbs)
+   (subst (subst (subst u sbs) sbweak)
+      (sbzero (subst v sbs))) (Subst A sbs)
   ).
-  { eapply myEqSym ; try magic. eapply EqSubstWeakZero ; magic. }
+  { magic. Unshelve. all:strictmagic. }
   assert (
      eqterm G
             (subst v sbs)
-            (subst (var 0) (sbzero G (Subst A sbs) (subst v sbs)))
+            (subst (var 0) (sbzero (subst v sbs)))
             (Subst A sbs)
   ).
-  { eapply myEqSym ; try magic. eapply EqSubstZeroZero ; magic. }
-  (* Now let's proceed with the proof. *)
+  { magic. Unshelve. all:strictmagic. }
+  assert (
+    eqtype G
+    (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbcomp (sbzero v) sbs))
+    (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbzero v)) sbs)
+  ).
+  { magic. Unshelve. all:strictmagic. }
+  assert (
+    eqctx
+    (ctxextend G
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbcomp (sbzero v) sbs)))
+    (ctxextend G
+       (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbzero v))
+          sbs))
+  ).
+  { magic. }
+  assert (
+    issubst (sbshift (sbcomp (sbzero v) sbs))
+   (ctxextend G
+      (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbzero v)) sbs))
+   (ctxextend (ctxextend D A) (Id (Subst A sbweak) (subst u sbweak) (var 0)))
+  ).
+  { magic. Unshelve. all:try strictmagic. all:magic.
+    Unshelve. all:strictmagic.
+  }
+  assert (
+    eqtype G
+    (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+       (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
+    (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbzero v)) sbs)
+  ).
+  { magic. Unshelve. all:strictmagic. }
+  assert (
+    eqctx
+    (ctxextend G
+       (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0))
+          (sbcomp (sbshift sbs) (sbzero (subst v sbs)))))
+    (ctxextend G
+       (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbzero v))
+          sbs))
+  ).
+  { magic. }
+  assert (
+    issubst (sbshift (sbcomp (sbshift sbs) (sbzero (subst v sbs))))
+    (ctxextend G
+       (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbzero v))
+          sbs))
+    (ctxextend (ctxextend D A) (Id (Subst A sbweak) (subst u sbweak) (var 0)))
+  ).
+  { magic. Unshelve. all:try strictmagic. all:magic.
+    Unshelve. all:strictmagic.
+  }
+  assert (
+    eqtype G
+    (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbshift sbs))
+       (sbzero (subst v sbs)))
+    (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbzero v)) sbs)
+  ).
+  { magic. }
+  assert (
+    eqctx
+    (ctxextend G
+       (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbshift sbs))
+          (sbzero (subst v sbs))))
+    (ctxextend G
+       (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbzero v))
+          sbs))
+  ).
+  { magic. }
+  assert (
+    issubst (sbcomp (sbshift (sbshift sbs)) (sbshift (sbzero (subst v sbs))))
+    (ctxextend G
+       (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbzero v))
+          sbs))
+    (ctxextend (ctxextend D A) (Id (Subst A sbweak) (subst u sbweak) (var 0)))
+  ).
+  { magic. Unshelve. all:try strictmagic. all:try magic.
+    Unshelve. all:try strictmagic. all:try magic.
+    Unshelve. all:strictmagic.
+  }
+  assert (
+    issubst (sbcomp (sbshift (sbshift sbs)) (sbshift (sbzero (subst v sbs))))
+   (ctxextend G
+      (Subst (Subst (Id (Subst A sbweak) (subst u sbweak) (var 0)) (sbzero v)) sbs))
+   (ctxextend (ctxextend D A) (Id (Subst A sbweak) (subst u sbweak) (var 0)))
+  ).
+  { magic. }
+  (*! Now let's proceed with the proof. !*)
   (* We start by composing all the substitutions so we can forget about
      the types. *)
   gocompsubst ; try assumption.
@@ -1933,17 +1712,17 @@ Proof.
   (* Now we can focus on susbtitutions. *)
   eapply CongTySubst ; try magic.
   (* We go from the rhs. *)
-  eapply mySubstSym ; try magic.
+  eapply SubstSym ; try magic.
   eapply SubstTrans ; [
     (* Then we only look on the lhs of the composition. *)
     eapply CongSubstComp ; [
       (* We exchange the substitutionss. *)
-      eapply mySubstSym ; [
+      eapply SubstSym ; [
         eapply ShiftZero ; magic
       | magic ..
       ]
     | (* We don't touch the rhs. *)
-      eapply SubstRefl ; magic
+    eapply SubstRefl ; magic
     | magic ..
     ]
   | try magic ..
@@ -1962,19 +1741,20 @@ Proof.
          fonctoriality to progress.
          However we need to apply congruence again to rewrite
          the type in the left shift. *)
-      eapply CongSubstComp ; [
-        eapply @CongSubstShift
-        with (A2 := Subst
-                     (Id (Subst A (sbweak D A))
-                         (subst u (sbweak D A))
-                         (var 0))
-                     (sbzero D A v)
-             ) ; try magic ;
-        (apply CtxRefl ; magic)
-      | (* We don't change the other substitution. *)
-        apply SubstRefl ; magic
-      | magic ..
-      ]
+    eapply CongSubstComp ; [
+      (* eapply @CongSubstShift *)
+      (* with (A2 := Subst *)
+      (*              (Id (Subst A sbweak) *)
+      (*                  (subst u sbweak) *)
+      (*                  (var 0)) *)
+      (*              (sbzero v) *)
+      (*      ) *)
+      eapply CongSubstShift ; try magic ;
+      (apply CtxRefl ; magic)
+    | (* We don't change the other substitution. *)
+    apply SubstRefl ; magic
+    | magic ..
+    ]
     | magic ..
     ]
   | try magic ..
@@ -1987,7 +1767,7 @@ Proof.
       eapply SubstRefl ; magic
     | eapply EqSubstCtxConv ; [
         eapply CompShift ; magic
-      | try magic ; assumption ..
+      | try magic ; eassumption ..
       ]
     | magic ..
     ]
@@ -2001,14 +1781,13 @@ Proof.
       eapply SubstRefl ; magic
     | eapply EqSubstCtxConv ; [
         eapply CongSubstShift ; [
-          eassumption
-        | eapply mySubstSym ; [
+          eapply SubstSym ; [
             eapply ShiftZero ; magic
           | magic ..
           ]
         | magic ..
         ]
-      | try magic ; assumption ..
+      | try magic ; eassumption ..
       ]
     | magic ..
     ]
@@ -2020,10 +1799,10 @@ Proof.
     eapply CongSubstComp ; [
       (* On the left we remain unchanged. *)
       eapply SubstRefl ; magic
-    | eapply mySubstSym ; [
+    | eapply SubstSym ; [
         eapply EqSubstCtxConv ; [
           eapply CompShift ; magic
-        | try magic ; assumption ..
+        | try magic ; eassumption ..
         ]
       | magic ..
       ]
@@ -2033,7 +1812,7 @@ Proof.
   ].
   (* Now, it's time to apply associativity guys. *)
   eapply SubstTrans ; [
-    eapply mySubstSym ; [
+    eapply SubstSym ; [
       eapply CompAssoc ; magic
     | magic ..
     ]
@@ -2043,12 +1822,12 @@ Proof.
      and thus be able to apply congruences. *)
   eapply CongSubstComp ; try magic.
   eapply CongSubstComp ; try magic ; try assumption.
-  - eapply EqSubstCtxConv ; [
-      eapply CongSubstShift ; magic
-    | try magic ; assumption ..
-    ].
-  - eapply SubstCtxConv ; try magic.
-    eapply EqCtxExtend ; try magic.
-    gopushsubst. gopushsubst. eapply CongId ; try magic ; try assumption.
-  Unshelve. all:assumption.
+  eapply EqSubstCtxConv ; [
+    eapply CongSubstShift ; magic
+  | try magic ; assumption ..
+  ].
+  Unshelve. all:try strictmagic. all:try magic.
+  Unshelve. all:try strictmagic.
+  all:eapply TermTyConv ; [ exact H5 | .. ] ; magic.
+  (* This is all because of the asserts eveywhere. *)
 Defined.
