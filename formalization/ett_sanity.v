@@ -1,10 +1,20 @@
 (* Sanity theorems for ett. *)
 
+Require config.
+Require Import config_tactics.
+
+
 Require Import syntax.
+Require Import tt.
+
 Require ptt.
 Require ptt_sanity.
 Require Import ett.
 Require Import ett2ptt ptt2ett.
+
+Section EttSanity.
+
+Context `{configReflection : config.Reflection}.
 
 Theorem sane_issubst sbs G D :
   issubst sbs G D -> isctx G * isctx D.
@@ -81,3 +91,5 @@ Proof.
   ; now apply (ptt_sanity.sane_eqterm G u v A),
               ett2ptt.sane_eqterm.
 Defined.
+
+End EttSanity.

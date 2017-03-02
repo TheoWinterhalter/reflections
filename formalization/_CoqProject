@@ -1,10 +1,12 @@
 -R . ""
 
+config.v
+config_tactics.v
 syntax.v
+tt.v
 ett.v
 ptt.v
 
-myptt.v
 ptt_tactics.v
 ptt_admissible.v
 ptt_inversion.v
