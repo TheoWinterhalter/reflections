@@ -421,11 +421,11 @@ with eqsubst : substitution -> substitution -> context -> context -> Type :=
      | SubstSym :
        rule
          parameters: {G D sbs sbt},
-         premise: isctx G
-         premise: isctx D
+         premise: eqsubst sbs sbt G D
          premise: issubst sbs G D
          premise: issubst sbt G D
-         premise: eqsubst sbs sbt G D
+         premise: isctx G
+         premise: isctx D
          conclusion:
            eqsubst sbt sbs G D
        endrule
@@ -662,10 +662,10 @@ with eqtype : context -> type -> type -> Type :=
      | EqTySym :
        rule
          parameters: {G A B},
-         premise: isctx G
+         premise: eqtype G A B
          premise: istype G A
          premise: istype G B
-         premise: eqtype G A B
+         premise: isctx G
          conclusion:
            eqtype G B A
        endrule
@@ -876,11 +876,11 @@ with eqterm : context -> term -> term -> type -> Type :=
      | EqSym :
        rule
          parameters: {G A u v},
-         premise: isctx G
-         premise: istype G A
+         premise: eqterm G v u A
          premise: isterm G u A
          premise: isterm G v A
-         premise: eqterm G v u A
+         premise: istype G A
+         premise: isctx G
          conclusion:
            eqterm G u v A
        endrule

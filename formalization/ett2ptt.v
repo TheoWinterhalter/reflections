@@ -334,11 +334,11 @@ Proof.
 
     (* SubstSym *)
     - { apply ptt.SubstSym.
-        - now apply (@ptt_sane_eqsubst sbs sbt G D), sane_eqsubst.
-        - now apply (@ptt_sane_eqsubst sbs sbt G D), sane_eqsubst.
-        - now apply (@ptt_sane_eqsubst sbs sbt G D), sane_eqsubst.
-        - now apply (@ptt_sane_eqsubst sbs sbt G D), sane_eqsubst.
         - now apply sane_eqsubst.
+        - now apply (@ptt_sane_eqsubst sbs sbt G D), sane_eqsubst.
+        - now apply (@ptt_sane_eqsubst sbs sbt G D), sane_eqsubst.
+        - now apply (@ptt_sane_eqsubst sbs sbt G D), sane_eqsubst.
+        - now apply (@ptt_sane_eqsubst sbs sbt G D), sane_eqsubst.
       }
 
     (* SubstTrans *)
@@ -497,10 +497,10 @@ Proof.
 
     (* EqTySym *)
     { apply ptt.EqTySym.
-      - now apply (ptt_sane_eqtype G A B), sane_eqtype.
-      - now apply (ptt_sane_eqtype G A B), sane_eqtype.
-      - now apply (ptt_sane_eqtype G A B), sane_eqtype.
       - now apply sane_eqtype.
+      - now apply (ptt_sane_eqtype G A B), sane_eqtype.
+      - now apply (ptt_sane_eqtype G A B), sane_eqtype.
+      - now apply (ptt_sane_eqtype G A B), sane_eqtype.
     }
 
     (* EqTyTrans *)
@@ -649,11 +649,11 @@ Proof.
 
     (* EqSym *)
     - { apply ptt.EqSym.
-        - now apply (@ptt_sane_eqterm G v u A), sane_eqterm.
-        - now apply (@ptt_sane_eqterm G v u A), sane_eqterm.
-        - now apply (@ptt_sane_eqterm G v u A), sane_eqterm.
-        - now apply (@ptt_sane_eqterm G v u A), sane_eqterm.
         - now apply sane_eqterm.
+        - now apply (@ptt_sane_eqterm G v u A), sane_eqterm.
+        - now apply (@ptt_sane_eqterm G v u A), sane_eqterm.
+        - now apply (@ptt_sane_eqterm G v u A), sane_eqterm.
+        - now apply (@ptt_sane_eqterm G v u A), sane_eqterm.
       }
 
     (* EqTrans *)

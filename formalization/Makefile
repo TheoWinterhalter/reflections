@@ -104,7 +104,6 @@ endif
 VFILES:=syntax.v\
   ett.v\
   ptt.v\
-  myptt.v\
   ptt_tactics.v\
   ptt_admissible.v\
   ptt_inversion.v\

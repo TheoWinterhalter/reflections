@@ -12,7 +12,6 @@ The purpose here is to state and prove theorems about the sanity of different ty
 * `ptt.v`: Typing rules of PTT (Paranoid Type Theory) using the same syntax, it has more premises to make sure everything is sane.
 
 ### Admissibility in PTT
-* `myptt.v`: **Temporary** file presenting some of PTT rules with a different order for the premises as admissible lemmata,
 * `ptt_tactics.v`: Tactics designed to prove judgements in PTT,
 * `ptt_admissible.v`: Admissible rules in PTT that are useful in the proof of sanity (*might be temporary?*),
 * `ptt_inversion.v`: Inversion lemmata for PTT.
