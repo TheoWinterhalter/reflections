@@ -104,6 +104,8 @@ endif
 VFILES:=config.v\
   config_tactics.v\
   syntax.v\
+  altsyntax.v\
+  syntaxes.v\
   tt.v\
   ett.v\
   ptt.v\

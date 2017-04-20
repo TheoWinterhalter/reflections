@@ -6,9 +6,13 @@
 Require config.
 Require Import config_tactics.
 
-Require Import syntax.
+Require syntax.
 Require Import tt.
 Require Import checking_tactics.
+
+Require altsyntax.
+Require Import Strings.String.
+Require Import syntaxes.
 
 (* Source type theory *)
 Module Stt.
@@ -76,6 +80,8 @@ Module Ttt.
 End Ttt.
 
 Section Translation.
+
+Import syntax.
 
 Context `{configReflection : config.Reflection}.
 Context `{configSimpleProducts : config.SimpleProducts}.
@@ -1227,3 +1233,65 @@ Proof.
 Qed.
 
 End Translation.
+
+(*! In Stt we have the negation of funext !*)
+Section Negation.
+
+Import altsyntax.
+Open Scope string_scope.
+
+(* We will negate (and thus instantiate) funext on Unit -> Unit only *)
+
+Definition arrow := Unit → Unit.
+
+(* Definition funextUnit := *)
+(*   Π ("f" in arrow) → *)
+(*     Π ("g" in arrow) → *)
+(*       (Π ("x" in Unit) → *)
+(*          (var "f") @[Unit → Unit] (var "x") ≡ (var "g") @[Unit → Unit] (var "x") in Unit) → *)
+(*       (var "f") ≡ (var "g") in arrow. *)
+
+Definition funextUnit :=
+  Π ("f" in arrow) →
+    Π ("g" in arrow) →
+      (Π ("x" in Unit) →
+         ((app (var "f") "_" Unit Unit (var "x"))
+       ≡ (app (var "g") "_" Unit Unit (var "x"))
+       in Unit)) →
+      ((var "f") ≡ (var "g") in arrow).
+
+(* Definition funextUnit := *)
+(*   Prod "f" arrow *)
+(*        (Prod "g" arrow *)
+(*              (Prod "_" (Prod "x" Unit *)
+(*                              (Id Unit *)
+(*                                  (app (var "f") "_" Unit Unit (var "x")) *)
+(*                                  (app (var "g") "_" Unit Unit (var "x")))) *)
+(*                    (Id arrow (var "f") (var "g")))). *)
+
+(* We will prove that [funextUnit] -> true = false by applying the funext
+   to two identity functions with different booleans.
+*)
+Definition idUnit := lam "x" Unit Unit (var "x").
+Definition idTrue := pair arrow Bool idUnit true.
+Definition idFalse := pair arrow Bool idUnit false.
+
+Definition _funextUnit := totype nil funextUnit.
+Definition trans_funextUnit :=
+  match _funextUnit with
+  | inl t => trans_type t
+  | _ => syntax.Empty (* does not happen! *)
+  end.
+
+Definition funextApplied : syntax.term.
+Proof.
+  pose (t := trans_funextUnit).
+  unfold trans_funextUnit in t. unfold _funextUnit in t.
+  simpl in t.
+
+  (* Maybe we should translate back to altsyntax... *)
+Abort.
+
+Close Scope string_scope.
+
+End Negation.

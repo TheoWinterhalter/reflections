@@ -9,7 +9,12 @@ The purpose here is to state and prove theorems about the sanity of different ty
 ### Theories
 * `syntax.v`: Syntax of our type theories with type annotations,
 * `ett.v`: Typing rules of ETT (Extensional Type Theory) using syntax from `syntax.v`,
-* `ptt.v`: Typing rules of PTT (Paranoid Type Theory) using the same syntax, it has more premises to make sure everything is sane.
+* `ptt.v`: Typing rules of PTT (Paranoid Type Theory) using the same
+  syntax, it has more premises to make sure everything is sane.
+
+### Alternative syntax
+* `altsyntax.v`: Syntax of type theory with named variables,
+* `syntaxes.v`: Translation from `altsyntax` to `syntax`.
 
 ### Admissibility in PTT
 * `ptt_tactics.v`: Tactics designed to prove judgements in PTT,
