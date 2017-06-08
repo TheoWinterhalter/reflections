@@ -1,22 +1,39 @@
-Require config.
+Require Import config.
 Require Import config_tactics.
 
-Require Import syntax.
 Require Import tt.
-Require ett ptt ptt_sanity ptt_inversion.
+Require ett ptt ptt_sanity.
+Require Import wfconfig.
 
 Section Ett2Ptt.
 
-Context `{configReflection : config.Reflection}.
-Context `{configSimpleProducts : config.SimpleProducts}.
-Context `{ConfigProdEta : config.ProdEta}.
-Context `{ConfigUniverses : config.Universes}.
-Context `{ConfigWithProp : config.WithProp}.
-Context `{ConfigWithJ : config.WithJ}.
-Context `{ConfigEmpty : config.WithEmpty}.
-Context `{ConfigUnit : config.WithUnit}.
-Context `{ConfigBool : config.WithBool}.
-Context `{ConfigPi : config.WithPi}.
+  Open Scope type_scope.
+
+Context {ConfigPrecond : config.Precond}.
+Context {ConfigReflection : config.Reflection}.
+Context {ConfigSimpleProducts : config.SimpleProducts}.
+Context {ConfigProdEta : config.ProdEta}.
+Context {ConfigUniverses : config.Universes}.
+Context {ConfigWithProp : config.WithProp}.
+Context {ConfigWithJ : config.WithJ}.
+Context {ConfigEmpty : config.WithEmpty}.
+Context {ConfigUnit : config.WithUnit}.
+Context {ConfigBool : config.WithBool}.
+Context {ConfigPi : config.WithPi}.
+
+Context {ConfigSyntax : config.Syntax}.
+
+(* We need inversion lemmata and we can't prove them since the syntax
+   is not necessarilly inductive and thus not necessarilly injective.
+
+   We want them for PTT.
+*)
+Local Instance hasPrecond : config.Precond
+  := {| config.precondFlag := config.Yes |}.
+Context {ConfigCtxExtendInversion : CtxExtendInversionClass}.
+Context {ConfigTyIdInversion : TyIdInversionClass}.
+Context {ConfigTyProdInversion : TyProdInversionClass}.
+Context {ConfigTySimProdInversion : TySimProdInversionClass}.
 
 (* Renaming ptt_sanity lemmata for readability. *)
 Definition ptt_sane_issubst := ptt_sanity.sane_issubst.
@@ -26,12 +43,6 @@ Definition ptt_sane_eqctx   := ptt_sanity.sane_eqctx.
 Definition ptt_sane_eqtype  := ptt_sanity.sane_eqtype.
 Definition ptt_sane_eqsubst := ptt_sanity.sane_eqsubst.
 Definition ptt_sane_eqterm  := ptt_sanity.sane_eqterm.
-
-(* Same for inversion *)
-Definition ptt_CtxExtendInversion := ptt_inversion.CtxExtendInversion.
-Definition ptt_TyProdInversion    := ptt_inversion.TyProdInversion.
-Definition ptt_TyIdInversion      := ptt_inversion.TyIdInversion.
-Definition ptt_TySimProdInversion := ptt_inversion.TySimProdInversion.
 
 
 Fixpoint sane_isctx G (P : ett.isctx G) {struct P} : ptt.isctx G
@@ -155,9 +166,10 @@ Proof.
     (* TyProd *)
     { capply TyProd.
       - now apply sane_istype.
-      - now apply (ptt_CtxExtendInversion G A),
+      - cut (ptt.isctx G * ptt.istype G A) ; [ intro h ; apply h | .. ].
+        now apply (CtxExtendInversion G A),
                   (ptt_sane_istype _ B), sane_istype.
-      - now apply (ptt_CtxExtendInversion G A),
+      - now apply (CtxExtendInversion G A),
                   (ptt_sane_istype _ B), sane_istype.
     }
 
@@ -249,9 +261,9 @@ Proof.
 
     (* TermAbs *)
     - { capply TermAbs.
-        - now apply (ptt_CtxExtendInversion G A),
+        - now apply (CtxExtendInversion G A),
                     (ptt_sane_isterm _ u B), sane_isterm.
-        - now apply (ptt_CtxExtendInversion G A),
+        - now apply (CtxExtendInversion G A),
                     (ptt_sane_isterm _ u B), sane_isterm.
         - now apply (@ptt_sane_isterm (ctxextend G A) u B), sane_isterm.
         - now apply sane_isterm.
@@ -261,7 +273,7 @@ Proof.
     - { capply TermApp.
         - now apply (@ptt_sane_isterm G v A), sane_isterm.
         - now apply (@ptt_sane_isterm G v A), sane_isterm.
-        - now apply (ptt_TyProdInversion G A B),
+        - now apply (TyProdInversion G A B),
                     (ptt_sane_isterm G u (Prod A B)),
                     sane_isterm.
         - now apply sane_isterm.
@@ -329,10 +341,10 @@ Proof.
     (* TermProjOne *)
     - { capply TermProjOne.
         - now apply (ptt_sane_isterm G p (SimProd A B)), sane_isterm.
-        - now apply (ptt_TySimProdInversion G A B),
+        - now apply (TySimProdInversion G A B),
                     (ptt_sane_isterm G p (SimProd A B)),
                     sane_isterm.
-        - now apply (ptt_TySimProdInversion G A B),
+        - now apply (TySimProdInversion G A B),
                     (ptt_sane_isterm G p (SimProd A B)),
                     sane_isterm.
         - now apply sane_isterm.
@@ -341,10 +353,10 @@ Proof.
     (* TermProjTwo *)
     - { capply TermProjTwo.
         - now apply (ptt_sane_isterm G p (SimProd A B)), sane_isterm.
-        - now apply (ptt_TySimProdInversion G A B),
+        - now apply (TySimProdInversion G A B),
                     (ptt_sane_isterm G p (SimProd A B)),
                     sane_isterm.
-        - now apply (ptt_TySimProdInversion G A B),
+        - now apply (TySimProdInversion G A B),
                     (ptt_sane_isterm G p (SimProd A B)),
                     sane_isterm.
         - now apply sane_isterm.
@@ -655,7 +667,7 @@ Proof.
     (* EqTySubstProd *)
     { config apply @EqTySubstProd with (D := D).
       - now apply sane_issubst.
-      - now apply (ptt_CtxExtendInversion D A),
+      - now apply (CtxExtendInversion D A),
             (ptt_sane_istype _ B), sane_istype.
       - now apply sane_istype.
       - now apply (@ptt_sane_issubst sbs G D), sane_issubst.
@@ -694,7 +706,7 @@ Proof.
     }
 
     (* EqTyExfalso *)
-    { config apply @EqTyExfalso with (u := u).
+    { config apply @EqTyExfalso with (u := u) (H := H).
       - now apply (@ptt_sane_istype G A), sane_istype.
       - now apply sane_istype.
       - now apply sane_istype.
@@ -960,7 +972,7 @@ Proof.
     - { config apply @EqSubstAbs with (D := D).
         - now apply (@ptt_sane_issubst sbs G D), sane_issubst.
         - now apply (@ptt_sane_issubst sbs G D), sane_issubst.
-        - now apply (ptt_CtxExtendInversion D A),
+        - now apply (CtxExtendInversion D A),
                     (ptt_sane_isterm _ u B),
                     sane_isterm.
         - now apply (@ptt_sane_isterm (ctxextend D A) u B), sane_isterm.
@@ -973,7 +985,7 @@ Proof.
         - now apply (@ptt_sane_issubst sbs G D), sane_issubst.
         - now apply (@ptt_sane_issubst sbs G D), sane_issubst.
         - now apply (@ptt_sane_isterm D v A), sane_isterm.
-        - now apply (ptt_TyProdInversion D A B),
+        - now apply (TyProdInversion D A B),
                     (ptt_sane_isterm D u _),
                     sane_isterm.
         - now apply sane_isterm.
@@ -1045,7 +1057,7 @@ Proof.
       }
 
     (* EqTermExfalso *)
-    - { config apply @EqTermExfalso with (w := w0).
+    - { config apply @EqTermExfalso with (w := w) (H := H).
         - now apply (ptt_sane_isterm G u A), sane_isterm.
         - now apply (ptt_sane_isterm G u A), sane_isterm.
         - now apply sane_isterm.
@@ -1062,14 +1074,15 @@ Proof.
 
     (* EqReflection *)
     - { config apply @EqReflection with (p := p).
+        - assumption.
         - now apply (@ptt_sane_isterm G p (Id A u v)), sane_isterm.
-        - now apply (ptt_TyIdInversion G A u v),
+        - now apply (TyIdInversion G A u v),
                     (ptt_sane_isterm G p (Id A u v)),
                     sane_isterm.
-        - now apply (ptt_TyIdInversion G A u v),
+        - now apply (TyIdInversion G A u v),
                     (ptt_sane_isterm G p (Id A u v)),
                     sane_isterm.
-        - now apply (ptt_TyIdInversion G A u v),
+        - now apply (TyIdInversion G A u v),
                     (ptt_sane_isterm G p (Id A u v)),
                     sane_isterm.
         - now apply sane_isterm.
@@ -1102,11 +1115,12 @@ Proof.
 
     (* ProdEta *)
     - { capply ProdEta.
+        - assumption.
         - now apply (@ptt_sane_isterm G u (Prod A B)), sane_isterm.
-        - now apply (ptt_TyProdInversion G A B),
+        - now apply (TyProdInversion G A B),
                     (ptt_sane_isterm G u (Prod A B)),
                     sane_isterm.
-        - now apply (ptt_TyProdInversion G A B),
+        - now apply (TyProdInversion G A B),
                     (ptt_sane_isterm G u (Prod A B)),
                     sane_isterm.
         - now apply sane_isterm.
@@ -1283,10 +1297,10 @@ Proof.
         - now apply sane_isterm.
         - now apply (ptt_sane_issubst sbs G D), sane_issubst.
         - now apply (ptt_sane_issubst sbs G D), sane_issubst.
-        - now apply (ptt_TySimProdInversion D A B),
+        - now apply (TySimProdInversion D A B),
                     (ptt_sane_isterm D p (SimProd A B)),
                     sane_isterm.
-        - now apply (ptt_TySimProdInversion D A B),
+        - now apply (TySimProdInversion D A B),
                     (ptt_sane_isterm D p (SimProd A B)),
                     sane_isterm.
       }
@@ -1297,10 +1311,10 @@ Proof.
         - now apply sane_isterm.
         - now apply (ptt_sane_issubst sbs G D), sane_issubst.
         - now apply (ptt_sane_issubst sbs G D), sane_issubst.
-        - now apply (ptt_TySimProdInversion D A B),
+        - now apply (TySimProdInversion D A B),
                     (ptt_sane_isterm D p (SimProd A B)),
                     sane_isterm.
-        - now apply (ptt_TySimProdInversion D A B),
+        - now apply (TySimProdInversion D A B),
                     (ptt_sane_isterm D p (SimProd A B)),
                     sane_isterm.
       }

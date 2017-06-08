@@ -1,25 +1,27 @@
 (* Sanity theorems for ptt. *)
 
-Require config.
+Require Import config.
 Require Import config_tactics.
 
-Require Import syntax.
 Require Import tt.
 Require Import checking_tactics ptt_admissible.
 
 Section PttSanity.
 
-Local Instance hasPrecond : config.Precond := {| config.precondFlag := config.Yes |}.
-Context `{configReflection : config.Reflection}.
-Context `{configSimpleProducts : config.SimpleProducts}.
-Context `{ConfigProdEta : config.ProdEta}.
-Context `{ConfigUniverses : config.Universes}.
-Context `{ConfigWithProp : config.WithProp}.
-Context `{ConfigWithJ : config.WithJ}.
-Context `{ConfigEmpty : config.WithEmpty}.
-Context `{ConfigUnit : config.WithUnit}.
-Context `{ConfigBool : config.WithBool}.
-Context `{ConfigPi : config.WithPi}.
+Local Instance hasPrecond : config.Precond
+  := {| config.precondFlag := config.Yes |}.
+Context {ConfigReflection : config.Reflection}.
+Context {ConfigSimpleProducts : config.SimpleProducts}.
+Context {ConfigProdEta : config.ProdEta}.
+Context {ConfigUniverses : config.Universes}.
+Context {ConfigWithProp : config.WithProp}.
+Context {ConfigWithJ : config.WithJ}.
+Context {ConfigEmpty : config.WithEmpty}.
+Context {ConfigUnit : config.WithUnit}.
+Context {ConfigBool : config.WithBool}.
+Context {ConfigPi : config.WithPi}.
+
+Context {ConfigSyntax : config.Syntax}.
 
 Axiom cheating : forall A, A.
 

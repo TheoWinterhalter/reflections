@@ -1,26 +1,29 @@
-Require config.
+Require Import config.
 Require Import config_tactics.
 
-Require Import syntax.
 Require Import tt.
 Require ptt ett.
 
 Section Ptt2Ett.
 
-Context `{configReflection : config.Reflection}.
-Context `{configSimpleProducts : config.SimpleProducts}.
-Context `{ConfigProdEta : config.ProdEta}.
-Context `{ConfigUniverses : config.Universes}.
-Context `{ConfigWithProp : config.WithProp}.
-Context `{ConfigWithJ : config.WithJ}.
-Context `{ConfigEmpty : config.WithEmpty}.
-Context `{ConfigUnit : config.WithUnit}.
-Context `{ConfigBool : config.WithBool}.
-Context `{ConfigPi : config.WithPi}.
+Context {ConfigPrecond : config.Precond}.
+Context {ConfigReflection : config.Reflection}.
+Context {ConfigSimpleProducts : config.SimpleProducts}.
+Context {ConfigProdEta : config.ProdEta}.
+Context {ConfigUniverses : config.Universes}.
+Context {ConfigWithProp : config.WithProp}.
+Context {ConfigWithJ : config.WithJ}.
+Context {ConfigEmpty : config.WithEmpty}.
+Context {ConfigUnit : config.WithUnit}.
+Context {ConfigBool : config.WithBool}.
+Context {ConfigPi : config.WithPi}.
+
+Context {ConfigSyntax : config.Syntax}.
 
 Fixpoint sane_isctx G (P : ptt.isctx G) : ett.isctx G
 
-with sane_issubst sbs G D (P : ptt.issubst sbs G D) {struct P} : ett.issubst sbs G D
+with sane_issubst sbs G D (P : ptt.issubst sbs G D) {struct P} :
+       ett.issubst sbs G D
 
 with sane_istype G A (P : ptt.istype G A) {struct P} : ett.istype G A
 
@@ -28,11 +31,13 @@ with sane_isterm G u A (P : ptt.isterm G u A) {struct P} : ett.isterm G u A
 
 with sane_eqctx G D (P : ptt.eqctx G D) {struct P} : ett.eqctx G D
 
-with sane_eqsubst sbs sbt G D (P : ptt.eqsubst sbs sbt G D) {struct P} : ett.eqsubst sbs sbt G D
+with sane_eqsubst sbs sbt G D (P : ptt.eqsubst sbs sbt G D) {struct P} :
+       ett.eqsubst sbs sbt G D
 
 with sane_eqtype G A B (P : ptt.eqtype G A B) {struct P} : ett.eqtype G A B
 
-with sane_eqterm G u v A (P : ptt.eqterm G u v A) {struct P} : ett.eqterm G u v A.
+with sane_eqterm G u v A (P : ptt.eqterm G u v A) {struct P} :
+       ett.eqterm G u v A.
 
 Proof.
   all:unfold ett.isctx in *.
@@ -296,7 +301,7 @@ Proof.
       - apply @EqTySubstBool with (D := D) ; auto.
 
       (* EqTyExfalso *)
-      - apply @EqTyExfalso with (u := u) ; auto.
+      - apply @EqTyExfalso with (u := u) (H := H) ; auto.
 
       (* CongProd *)
       - apply CongProd ; auto.
@@ -422,7 +427,7 @@ Proof.
       - apply @EqSubstCond with (D := D) ; auto.
 
       (* EqTermExfalso *)
-      - apply @EqTermExfalso with (w := w0) ; auto.
+      - apply @EqTermExfalso with (w := w) (H := H) ; auto.
 
       (* UnitEta *)
       - apply UnitEta ; auto.

@@ -1,11 +1,10 @@
 (* Sanity theorems for ett. *)
 
-Require config.
+Require Import config.
 Require Import config_tactics.
-
+Require Import wfconfig.
 
 Require Import syntax.
-Require Import tt.
 
 Require ptt.
 Require ptt_sanity.
@@ -14,16 +13,24 @@ Require Import ett2ptt ptt2ett.
 
 Section EttSanity.
 
-Context `{configReflection : config.Reflection}.
-Context `{configSimpleProducts : config.SimpleProducts}.
-Context `{configProdEta : config.ProdEta}.
-Context `{ConfigUniverses : config.Universes}.
-Context `{ConfigWithProp : config.WithProp}.
-Context `{ConfigWithJ : config.WithJ}.
-Context `{ConfigEmpty : config.WithEmpty}.
-Context `{ConfigUnit : config.WithUnit}.
-Context `{ConfigBool : config.WithBool}.
-Context `{ConfigPi : config.WithPi}.
+Context {ConfigReflection : config.Reflection}.
+Context {ConfigSimpleProducts : config.SimpleProducts}.
+Context {ConfigProdEta : config.ProdEta}.
+Context {ConfigUniverses : config.Universes}.
+Context {ConfigWithProp : config.WithProp}.
+Context {ConfigWithJ : config.WithJ}.
+Context {ConfigEmpty : config.WithEmpty}.
+Context {ConfigUnit : config.WithUnit}.
+Context {ConfigBool : config.WithBool}.
+Context {ConfigPi : config.WithPi}.
+
+Context {ConfigSyntax : config.Syntax}.
+
+Local Instance hasPrecond : config.Precond := {| config.precondFlag := config.Yes |}.
+Context {ConfigCtxExtendInversion : CtxExtendInversionClass}.
+Context {ConfigTyIdInversion : TyIdInversionClass}.
+Context {ConfigTyProdInversion : TyProdInversionClass}.
+Context {ConfigTySimProdInversion : TySimProdInversionClass}.
 
 Theorem sane_issubst sbs G D :
   issubst sbs G D -> isctx G * isctx D.

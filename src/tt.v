@@ -2,62 +2,65 @@
 
 (* Requirements:
 
-   1. Use only letters (no numerals) in rule names, because we define LaTeX macros
-      out of them, and those cannot contain numerals.
+   1. Use only letters (no numerals) in rule names, because we define LaTeX
+      macros out of them, and those cannot contain numerals.
 
-   2. Do not nest comments inside comments, or else the Python script will break.
+   2. Do not nest comments inside comments, or else the Python script will
+      break.
 
 *)
 
-Require Import syntax.
+(* Require Import syntax. *)
 Require Import config.
 
 Section TypeTheoryRules.
 (* Notations for writing down inference rules. *)
 
-Context `{ConfigPrecond : config.Precond}.
-Context `{ConfigReflection : config.Reflection}.
-Context `{ConfigSimpleProducts : config.SimpleProducts}.
-Context `{ConfigProdEta : config.ProdEta}.
-Context `{ConfigUniverses : config.Universes}.
-Context `{ConfigWithProp : config.WithProp}.
-Context `{ConfigWithJ : config.WithJ}.
-Context `{ConfigEmpty : config.WithEmpty}.
-Context `{ConfigUnit : config.WithUnit}.
-Context `{ConfigBool : config.WithBool}.
-Context `{ConfigPi : config.WithPi}.
+Context {ConfigPrecond : config.Precond}.
+Context {ConfigReflection : config.Reflection}.
+Context {ConfigSimpleProducts : config.SimpleProducts}.
+Context {ConfigProdEta : config.ProdEta}.
+Context {ConfigUniverses : config.Universes}.
+Context {ConfigWithProp : config.WithProp}.
+Context {ConfigWithJ : config.WithJ}.
+Context {ConfigEmpty : config.WithEmpty}.
+Context {ConfigUnit : config.WithUnit}.
+Context {ConfigBool : config.WithBool}.
+Context {ConfigPi : config.WithPi}.
+
+Context {ConfigSyntax : config.Syntax}.
 
 Notation "'rule' r 'endrule'" := (r) (at level 96, only parsing).
 
 Notation "'extensional' r" :=
-  (forall { _ : reflectionFlag }, r) (only parsing, at level 97).
+  (forall `{ _ : config.Flag reflectionFlag }, r) (only parsing, at level 97).
 
 Notation "'simpleproduct' r" :=
-  (forall { _ : simpleproductsFlag }, r) (only parsing, at level 97).
+  (forall `{ _ : config.Flag simpleproductsFlag }, r) (only parsing, at level 97).
 
 Notation "'prodeta' r" :=
-  (forall { _ : prodetaFlag }, r) (only parsing, at level 97).
+  (forall `{ _ : config.Flag prodetaFlag }, r) (only parsing, at level 97).
 
 Notation "'universe' r" :=
-  (forall { _ : universesFlag }, r) (only parsing, at level 97).
+  (forall `{ _ : config.Flag universesFlag }, r) (only parsing, at level 97).
 
 Notation "'withprop' r" :=
-  (forall { _ : withpropFlag }, r) (only parsing, at level 97).
+  (forall `{ _ : config.Flag withpropFlag }, r) (only parsing, at level 97).
 
 Notation "'withj' r" :=
-  (forall { _ : withjFlag }, r) (only parsing, at level 97).
+  (forall `{ _ : config.Flag withjFlag }, r) (only parsing, at level 97).
 
 Notation "'withempty' r" :=
-  (forall { _ : withemptyFlag }, r) (only parsing, at level 97).
+  (forall `{ _ : config.Flag withemptyFlag }, r) (only parsing, at level 97).
 
 Notation "'withunit' r" :=
-  (forall { _ : withunitFlag }, r) (only parsing, at level 97).
+  (forall `{ _ : config.Flag withunitFlag }, r) (only parsing, at level 97).
 
 Notation "'withbool' r" :=
-  (forall { _ : withboolFlag }, r) (only parsing, at level 97).
+  (forall `{ _ : config.Flag withboolFlag }, r) (only parsing, at level 97).
 
 Notation "'withpi' r" :=
-  (forall { _ : withpiFlag }, r) (only parsing, at level 97).
+  (forall `{ _ : config.Flag withpiFlag }, r) (only parsing, at level 97).
 
 Notation "'parameters:'  x .. y , p" :=
   ((forall x , .. (forall y , p) ..))

@@ -2,7 +2,6 @@
 
 config.v
 config_tactics.v
-syntax.v
 tt.v
 ett.v
 ptt.v
@@ -10,18 +9,22 @@ ptt.v
 checking_tactics.v
 
 ptt_admissible.v
-ptt_inversion.v
 
 ptt_sanity.v
 ptt2ett.v
+wfconfig.v
 ett2ptt.v
 ett_sanity.v
 
 tactics.v
-inversion.v
 
-uniqueness.v
+paranoid_syntax.v
+daring_syntax.v
 
-# substitution_elim.v
+ps_inversion.v
+ds_inversion.v
+
+# We want to have it, but it doesn't work for now
+# uniqueness.v
 
 negfunext.v
